@@ -26,11 +26,21 @@ Sukses (200 / 201):
 }
 ```
 
-Error (422 / 401 / 403 / 404):
+204 (logout, delete task, remove assignee) dikembalikan tanpa body.
+
+Error:
+
+- `401` — belum login, token tidak valid, atau token sudah di-revoke.
+- `403` — login tapi tidak berhak (mis. Member mengakses tugas orang lain, non-admin akses `/users`).
+- `404` — resource tidak ditemukan.
+- `422` — validasi gagal, disertai `errors` per-field untuk ditampilkan di form:
 
 ```json
 {
-  "message": "Deskpsi error"
+  "message": "Validasi gagal.",
+  "errors": {
+    "title": ["Judul wajib diisi, maksimal 100 karakter."]
+  }
 }
 ```
 
@@ -98,13 +108,7 @@ POST /logout
 
 Header: `Authorization: Bearer {token}`
 
-Response 200:
-
-```json
-{
-  "data": "Logged out"
-}
-```
+Response 204 tanpa body. Token yang dipakai request ini dicabut.
 
 ### Get Current User
 
@@ -216,7 +220,7 @@ Response 200:
 DELETE /tasks/{id}
 ```
 
-Response 204 atau `{ "data": "Deleted" }`.
+Response 204 tanpa body.
 
 ## Assignees
 
@@ -234,7 +238,9 @@ Body:
 }
 ```
 
-Response 200.
+Response 201 dengan data tugas terbaru (termasuk `assignees`).
+
+Error `422` jika `user_id` tidak valid atau user sudah menjadi assignee (duplikat); `403` jika tidak berhak mengelola tugas tersebut.
 
 ### Remove Assignee
 
@@ -276,6 +282,8 @@ Body:
 }
 ```
 
-Response 200.
+Response 200 dengan data user terbaru.
+
+Error `422` jika mencoba mengubah role diri sendiri (Admin tidak boleh mengubah role-nya sendiri); `404` jika user tidak ada.
 
 Akses: Admin saja.

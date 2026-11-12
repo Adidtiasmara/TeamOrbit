@@ -7,43 +7,40 @@ teamorbit/
 ├── .env.example
 ├── backend/
 │   ├── app/
-│   │   ├── Console/
-│   │   ├── Exceptions/
 │   │   ├── Http/
 │   │   │   ├── Controllers/
-│   │   │   │   ├── Api/
-│   │   │   │   │   ├── AuthController.php
-│   │   │   │   │   ├── TaskController.php
-│   │   │   │   │   ├── AssigneeController.php
-│   │   │   │   │   └── UserController.php
+│   │   │   │   └── Api/
+│   │   │   │       ├── AuthController.php
+│   │   │   │       ├── TaskController.php
+│   │   │   │       ├── AssigneeController.php
+│   │   │   │       └── UserController.php
 │   │   │   └── Middleware/
 │   │   │       └── RoleMiddleware.php
 │   │   ├── Models/
 │   │   │   ├── User.php
 │   │   │   ├── Task.php
-│   │   │   ├── Tag.php
-│   │   │   └── ...
+│   │   │   └── Tag.php
 │   │   ├── Policies/
 │   │   │   └── TaskPolicy.php
-│   │   ├── Providers/
-│   │   ├── bootstrap/
-│   │   ├── config/
-│   │   ├── database/
-│   │   │   ├── factories/
-│   │   │   ├── migrations/
-│   │   │   └── seeders/
-│   │   ├── routes/
-│   │   │   └── api.php
-│   │   ├── tests/
-│   │   │   ├── Feature/
-│   │   │   │   ├── AuthTest.php
-│   │   │   │   ├── TaskTest.php
-│   │   │   │   └── AssigneeTest.php
-│   │   │   └── Unit/
-│   │   ├── artisan
-│   │   ├── composer.json
-│   │   ├── phpunit.xml
-│   │   └── ...
+│   │   └── Providers/
+│   ├── bootstrap/
+│   │   └── app.php
+│   ├── config/
+│   ├── database/
+│   │   ├── factories/
+│   │   ├── migrations/
+│   │   └── seeders/
+│   ├── routes/
+│   │   └── api.php
+│   ├── tests/
+│   │   ├── Feature/
+│   │   │   ├── AuthTest.php
+│   │   │   ├── TaskTest.php
+│   │   │   └── AssigneeTest.php
+│   │   └── Unit/
+│   ├── artisan
+│   ├── composer.json
+│   └── phpunit.xml
 ├── frontend/
 │   ├── app/
 │   │   ├── (auth)/
@@ -53,8 +50,7 @@ teamorbit/
 │   │   │       └── page.tsx
 │   │   ├── (dashboard)/
 │   │   │   ├── tasks/
-│   │   │   │   └── page.tsx
-│   │   │   ├── tasks/
+│   │   │   │   ├── page.tsx
 │   │   │   │   └── [id]/
 │   │   │   │       └── page.tsx
 │   │   │   └── users/

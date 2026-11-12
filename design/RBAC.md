@@ -14,13 +14,13 @@
 | Lihat tugas yang ia buat | Y | Y |
 | Lihat tugas yang ditugaskan kepadanya | Y | Y |
 | Buat tugas baru | Y | Y |
-| Edit tugas (owner/admin) | Y (semua) | Y (hanya tugas sendiri) |
-| Hapus tugas (owner/admin) | Y (semua) | Y (hanya tugas sendiri) |
-| Ubah status tugas | Y | Y (hanya tugas yang ia akses) |
-| Tambah assignee pada tugas | Y (semua) | Y (hanya tugas sendiri) |
-| Hapus assignee pada tugas | Y (semua) | Y (hanya tugas sendiri) |
+| Edit tugas | Y (semua) | Y (milik atau ditugaskan) |
+| Hapus tugas | Y (semua) | Y (milik atau ditugaskan) |
+| Ubah status tugas | Y | Y (milik atau ditugaskan) |
+| Tambah assignee pada tugas | Y (semua) | Y (milik atau ditugaskan) |
+| Hapus assignee pada tugas | Y (semua) | Y (milik atau ditugaskan) |
 | List semua user | Y | N |
-| Ubah role user | Y | N (tidak bisa ubah role sendiri) |
+| Ubah role user | Y (kecuali dirinya sendiri) | N |
 
 ## Keterangan Akses Tugas
 
@@ -33,4 +33,4 @@ WHERE tasks.created_by = current_user.id
 
 - Admin bypass rule di atas dan bisa akses semua tugas.
 - Member hanya mendapat tugas yang ia buat atau yang ditugaskan kepadanya.
-- Setiap tugas baru otomatis membuat pembuat sebagai salah satu assignee agar visibilitas tetap konsisten.
+- Pembuat tugas TIDAK otomatis menjadi assignee. Assignee ditambahkan eksplisit lewat endpoint assignees (boleh termasuk dirinya sendiri). Pembuat tetap bisa mengakses tugasnya melalui `created_by`.

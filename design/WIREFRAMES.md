@@ -1,5 +1,7 @@
 # Wireframes - TeamOrbit
 
+> **CATATAN SCOPE:** Elemen berikut tampil di `mockup.html` hanya sebagai dekorasi visual dan BUKAN fitur TeamOrbit (tidak ada di skema database): Proyek, Tenggat/deadline, filter chip kategori (Marketing/Engineering/Design/Admin), dan stat "Jatuh tempo". Implementasi Fase 4/5 hanya mengikuti skema DB: title, description, status (belum_selesai/selesai), assignees. Daftar halaman di bawah ini adalah acuan UI yang berlaku.
+
 Wireframe interaktif sudah dibuat sebagai HTML mockup di file berikut:
 
 - `mockup.html`
@@ -26,20 +28,19 @@ Buka `mockup.html` di browser untuk melihat UI secara interaktif.
 
 ### 3. Dashboard Tugas
 
-- Topbar: judul halaman, search, notifikasi, tombol + Tugas baru, avatar user
-- Sidebar: workspace, menu Tugas, filter proyek
-- Stats card: Total, Belum selesai, Selesai, Jatuh tempo
-- Filter chips: Semua, Marketing, Engineering, Design, Admin
-- Board view: kolom Belum selesai dan Selesai dengan kartu tugas
+- Topbar: judul halaman, tombol + Tugas baru, avatar user, menu Admin Users (hanya Admin), tombol Keluar
+- Filter status: Semua, Belum Selesai, Selesai (mengirim `?status=`)
+- Info role user yang login; Member hanya melihat tugas milik/ditugaskan
+- List tugas: judul, status, assignees — klik menuju Detail Tugas
 
 ### 4. Detail Tugas
 
-- Breadcrumb kembali ke dashboard
-- Judul tugas
-- Action: Tandai selesai/belum selesai, Edit, Hapus
-- Panel properti: Status, Proyek, Tenggat, Dibuat oleh
-- Panel deskripsi
-- Panel assignee: daftar assignee, form tambah assignee
+- Tombol kembali ke dashboard
+- Judul tugas + status (bisa di-toggle selesai/belum selesai)
+- Deskripsi, dibuat oleh
+- Tombol Edit/Hapus hanya tampil jika user berhak (Admin: semua tugas; Member: milik/ditugaskan), selain itu backend menolak dengan 403
+- Panel assignee: daftar assignee dengan tombol hapus per orang, form tambah assignee (dropdown daftar user)
+- Pembuat tugas tidak otomatis masuk daftar assignee; ia menambahkan dirinya secara eksplisit bila mau
 
 ### 5. Admin Users
 
