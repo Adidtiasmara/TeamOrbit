@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TeamOrbit - Mockup Desain UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=6" />
+</head>
+<body>
+  <!-- Mockup controls -->
+  <div class="mockup-toolbar">
+    <div class="mockup-toolbar-inner">
+      <span class="mock-label">Mockup</span>
+      <div class="mock-group">
+        <button type="button" class="btn is-active" data-goto="login">Login</button>
+        <button type="button" class="btn" data-goto="register">Register</button>
+        <button type="button" class="btn" data-goto="dashboard">Dashboard</button>
+        <button type="button" class="btn" data-goto="detail">Detail</button>
+        <button type="button" class="btn" data-goto="admin">Admin Users</button>
+      </div>
+      <div class="mock-group">
+        <span class="mock-label">Role login</span>
+        <button type="button" class="btn is-active" data-role="member">Member</button>
+        <button type="button" class="btn" data-role="admin">Admin</button>
+      </div>
+      <div class="mock-group">
+        <span class="mock-label">Tema</span>
+        <button type="button" class="btn" id="themeToggle">Gelap</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="appShell">
+    <!-- Topbar -->
+    <header class="topbar" id="topbar" style="display:none">
+      <div class="topbar-left">
+        <button type="button" class="btn btn-ghost sidebar-toggle" id="sidebarToggle" aria-label="Buka menu">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+        <h1 class="page-title" id="topbarTitle">Tugas tim</h1>
+      </div>
+      <div class="topbar-right">
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 100-15 7.5 7.5 0 000 15z"></path></svg>
+          <input type="text" id="globalSearch" placeholder="Cari tugas..." />
+        </div>
+        <button type="button" class="btn btn-ghost icon-btn" aria-label="Pengaturan">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.427 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.427 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.427-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        </button>
+        <button type="button" class="btn btn-ghost icon-btn" aria-label="Notifikasi">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v-.341c-2.33.825-4 3.05-4 5.659v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+        </button>
+        <button type="button" class="btn btn-primary" id="openTaskModal">+ Tugas baru</button>
+        <div class="user-avatar" id="topbarAvatar">B</div>
+      </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar" style="display:none">
+      <div class="workspace-name">
+        <span class="avatar">T</span>
+        TeamOrbit
+      </div>
+      <div class="sidebar-section">Menu</div>
+      <a href="#" class="sidebar-link is-active" data-goto="dashboard" id="navDashboard">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        Tugas
+      </a>
+      <a href="#" class="sidebar-link" data-goto="admin" id="navAdmin" style="display:none">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.427 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.427 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.427-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        Admin Users
+      </a>
+      <div class="sidebar-section">Proyek</div>
+      <a href="#" class="sidebar-link" data-filter-project="marketing" id="filterMarketing">
+        <span class="page-icon dot dot-red"></span>
+        Marketing
+      </a>
+      <a href="#" class="sidebar-link" data-filter-project="engineering" id="filterEngineering">
+        <span class="page-icon dot dot-blue"></span>
+        Engineering
+      </a>
+      <a href="#" class="sidebar-link" data-filter-project="design" id="filterDesign">
+        <span class="page-icon dot dot-purple"></span>
+        Design
+      </a>
+    </aside>
+
+    <!-- Main pages -->
+    <main class="main">
+      <!-- Login -->
+      <section id="page-login" class="page">
+        <div class="container-sm">
+          <div class="auth-card">
+            <div class="auth-header">
+              <div class="auth-brand">
+                <span class="auth-logo">T</span>
+                TeamOrbit
+              </div>
+              <h1 class="auth-title">Masuk ke orbit tim</h1>
+            </div>
+            <form id="loginForm" novalidate>
+              <div class="form-group">
+                <label for="loginEmail">Email</label>
+                <input type="email" id="loginEmail" name="email" placeholder="nama@perusahaan.id" />
+                <span class="error">Email wajib diisi.</span>
+              </div>
+              <div class="form-group">
+                <label for="loginPassword">Kata sandi</label>
+                <input type="password" id="loginPassword" name="password" />
+                <span class="error">Kata sandi wajib diisi.</span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+            </form>
+            <p class="auth-footer">Belum punya akun? <a href="#" data-goto="register">Daftar</a></p>
+            <div class="hint-box">
+              <p><strong>Demo</strong> - akun dari seeder FASE 1:</p>
+              <p>Admin: <code>admin@teamorbit.test</code> / <code>password</code></p>
+              <p>Member: <code>budi@teamorbit.test</code> / <code>password</code></p>
+              <div class="demo-buttons">
+                <button type="button" class="btn" id="fillAdmin">Isi admin</button>
+                <button type="button" class="btn" id="fillMember">Isi member</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Register -->
+      <section id="page-register" class="page hidden">
+        <div class="container-sm">
+          <div class="auth-card">
+            <div class="auth-header">
+              <h1 class="auth-title auth-title--lg">Buat akun baru</h1>
+              <p class="auth-lead">Bergabung dengan tim di orbit yang sama.</p>
+            </div>
+            <form id="registerForm" novalidate>
+              <div class="form-group">
+                <label for="regName">Nama</label>
+                <input type="text" id="regName" name="name" />
+                <span class="error">Nama wajib diisi.</span>
+              </div>
+              <div class="form-group">
+                <label for="regEmail">Email</label>
+                <input type="email" id="regEmail" name="email" />
+                <span class="error">Email valid wajib diisi.</span>
+              </div>
+              <div class="form-group">
+                <label for="regPassword">Kata sandi</label>
+                <input type="password" id="regPassword" name="password" />
+                <span class="error">Kata sandi minimal 8 karakter.</span>
+              </div>
+              <div class="form-group">
+                <label for="regPasswordConfirm">Ulangi kata sandi</label>
+                <input type="password" id="regPasswordConfirm" />
+                <span class="error">Kata sandi tidak sama.</span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+            </form>
+            <p class="auth-footer">Sudah punya akun? <a href="#" data-goto="login">Masuk</a></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dashboard -->
+      <section id="page-dashboard" class="page hidden">
+        <div class="container">
+          <div class="page-header page-header--tight">
+            <div>
+              <h1 class="page-title page-title--lg">Tugas tim</h1>
+              <p class="page-subtitle">Pantau dan kelola tugas tim dalam satu orbit.</p>
+            </div>
+          </div>
+
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <div class="filter-bar" id="filterChips"></div>
+
+          <div id="dashboardContent"></div>
+        </div>
+      </section>
+
+      <!-- Detail -->
+      <section id="page-detail" class="page hidden">
+        <div class="container">
+          <a href="#" class="breadcrumb" data-goto="dashboard">Kembali ke dashboard</a>
+          <h1 class="detail-title" id="detailTitle">Judul tugas</h1>
+          <div class="detail-actions" id="detailActions"></div>
+          <div id="detailBody"></div>
+        </div>
+      </section>
+
+      <!-- Admin Users -->
+      <section id="page-admin" class="page hidden">
+        <div class="container">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title page-title--lg">Kelola pengguna</h1>
+              <p class="page-subtitle">Ubah role anggota tim. Hanya admin yang dapat mengakses halaman ini.</p>
+            </div>
+            <input type="search" id="userSearch" placeholder="Cari nama atau email..." class="search-field" />
+          </div>
+          <div class="card card--flush">
+            <table class="users-table" id="usersTable">
+              <thead>
+                <tr><th>Nama</th><th>Email</th><th>Role</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="usersTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Forbidden -->
+      <section id="page-forbidden" class="page hidden">
+        <div class="container">
+          <div class="forbidden">
+            <h1>403</h1>
+            <p class="forbidden-text">Akses ditolak. Halaman ini hanya untuk admin.</p>
+            <a href="#" class="btn btn-primary" data-goto="dashboard">Kembali ke dashboard</a>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-backdrop" id="taskModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Tugas baru</h2>
+        <button type="button" class="modal-close" id="closeModal" aria-label="Tutup">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <form id="taskForm" novalidate>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="taskTitle">Judul <span class="label-hint">(wajib, maks. 100 karakter)</span></label>
+            <input type="text" id="taskTitle" name="title" maxlength="100" />
+            <div class="char-counter" id="titleCounter">0 / 100</div>
+            <span class="error" id="titleError">Judul wajib diisi dan maksimal 100 karakter.</span>
+          </div>
+          <div class="form-group">
+            <label for="taskProject">Proyek</label>
+            <select id="taskProject">
+              <option value="">Pilih proyek</option>
+              <option value="marketing">Marketing</option>
+              <option value="engineering">Engineering</option>
+              <option value="design">Design</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="taskDue">Tenggat</label>
+            <input type="date" id="taskDue" />
+          </div>
+          <div class="form-group">
+            <label for="taskDesc">Deskripsi</label>
+            <textarea id="taskDesc" name="description" rows="4"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" id="cancelModal">Batal</button>
+          <button type="submit" class="btn btn-primary" id="saveTaskBtn">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="script.js?v=6"></script>
+</body>
+</html>
