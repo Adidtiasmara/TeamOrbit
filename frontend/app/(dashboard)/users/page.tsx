@@ -75,6 +75,14 @@ function UserManagement({ currentUserId }: { currentUserId: number }) {
       {notice && <Alert tone="success">{notice}</Alert>}
       {actionError && <Alert tone="error">{actionError}</Alert>}
 
+      {/* Dihitung dari daftar yang sudah dimuat; tidak tampil saat loading/error. */}
+      {users.status === "success" && (
+        <p className="text-sm text-muted">
+          Total pengguna:{" "}
+          <span className="font-semibold text-ink">{users.data.length}</span>
+        </p>
+      )}
+
       {users.status === "error" ? (
         <StateMessage title={errorMessage(users.error)}>
           <Button onClick={users.reload}>Coba lagi</Button>
