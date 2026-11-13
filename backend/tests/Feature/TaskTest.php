@@ -351,7 +351,7 @@ class TaskTest extends TestCase
         foreach ($responses as $name => [$response, $path]) {
             $this->assertSame(['data'], array_keys($response->json()), $name);
             $this->assertSame(
-                ['id', 'title', 'description', 'status', 'created_by', 'assignees', 'tags', 'created_at', 'updated_at'],
+                ['id', 'title', 'description', 'status', 'start_date', 'due_date', 'is_overdue', 'created_by', 'assignees', 'tags', 'created_at', 'updated_at'],
                 array_keys($response->json($path)),
                 $name,
             );

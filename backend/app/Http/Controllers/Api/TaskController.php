@@ -10,6 +10,7 @@ use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
@@ -30,6 +31,26 @@ class TaskController extends Controller
             ->get();
 
         return TaskResource::collection($tasks);
+    }
+
+    /**
+     * Statistik tugas yang terlihat oleh user: Admin seluruh tugas tim,
+     * Member hanya tugas yang ia buat atau ditugaskan kepadanya.
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $visible = fn () => Task::query()->visibleTo($request->user());
+
+        $total = $visible()->count();
+        $done = $visible()->where('status', Task::STATUS_DONE)->count();
+
+        return response()->json(['data' => [
+            'total' => $total,
+            'done' => $done,
+            'pending' => $total - $done,
+            'overdue' => $visible()->overdue()->count(),
+            'percent_done' => $total === 0 ? 0 : (int) round($done / $total * 100),
+        ]]);
     }
 
     public function store(StoreTaskRequest $request): JsonResponse

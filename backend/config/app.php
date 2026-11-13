@@ -67,6 +67,9 @@ return [
 
     'timezone' => 'UTC',
 
+    // Zona waktu tim untuk menentukan "hari ini" pada deadline tugas.
+    'task_timezone' => env('TASK_TIMEZONE', 'Asia/Jakarta'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration

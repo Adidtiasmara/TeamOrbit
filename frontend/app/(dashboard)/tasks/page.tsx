@@ -3,17 +3,18 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TaskForm } from "../../components/forms/TaskForm";
+import { TaskDates, TaskStats } from "../../components/tasks/TaskSections";
 import { Alert } from "../../components/ui/Alert";
 import { Avatar } from "../../components/ui/Avatar";
 import { TAGLINE } from "../../components/ui/Brand";
 import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { Spinner, StateMessage } from "../../components/ui/StateMessage";
-import { StatusBadge } from "../../components/ui/StatusBadge";
+import { OverdueBadge, StatusBadge } from "../../components/ui/StatusBadge";
 import { TagChip } from "../../components/ui/TagChip";
 import { useApiData } from "../../hooks/useApiData";
 import { useAuth } from "../../hooks/useAuth";
-import { errorMessage, listTasks } from "../../lib/api";
+import { errorMessage, getTaskSummary, listTasks } from "../../lib/api";
 import { takeFlash } from "../../lib/flash";
 import { isAdmin } from "../../lib/permissions";
 import type { Task, TaskStatus } from "../../lib/types";
@@ -50,18 +51,27 @@ export default function TasksPage() {
     }
   }, []);
 
+  const admin = isAdmin(user);
+  // Naik setiap ada tugas baru supaya statistik ikut dimuat ulang.
+  const [version, setVersion] = useState(0);
+
   const handleCreated = (task: Task) => {
     setFormOpen(false);
     setNotice(`Tugas "${task.title}" dibuat.`);
     tasks.reload();
+    setVersion((value) => value + 1);
   };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-ink">Tugas tim</h1>
-          <p className="mt-1 text-sm text-muted">{TAGLINE}</p>
+          <h1 className="text-2xl font-bold text-ink">
+            {admin ? "Kelola tugas" : "Tugas tim"}
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            {admin ? "Pantau dan kelola seluruh tugas tim." : TAGLINE}
+          </p>
         </div>
         <Button
           variant="primary"
@@ -73,6 +83,8 @@ export default function TasksPage() {
           + Tugas baru
         </Button>
       </div>
+
+      {admin && <AdminSummary version={version} />}
 
       <div
         role="group"
@@ -101,7 +113,7 @@ export default function TasksPage() {
       </div>
 
       <Alert>
-        {isAdmin(user) ? (
+        {admin ? (
           <>
             Kamu login sebagai <strong>Admin</strong>: semua tugas tim tampil
             di sini.
@@ -148,6 +160,28 @@ export default function TasksPage() {
   );
 }
 
+/** Statistik seluruh tugas tim, tidak terpengaruh filter status. */
+function AdminSummary({ version }: { version: number }) {
+  const summary = useApiData(`task-summary:${version}`, getTaskSummary);
+
+  if (summary.status === "error") {
+    return (
+      <Alert tone="error">
+        Statistik tugas gagal dimuat.{" "}
+        <button type="button" onClick={summary.reload} className="underline">
+          Coba lagi
+        </button>
+      </Alert>
+    );
+  }
+
+  if (summary.status === "loading") {
+    return <Spinner label="Memuat statistik..." />;
+  }
+
+  return <TaskStats summary={summary.data} />;
+}
+
 function TaskRow({ task }: { task: Task }) {
   return (
     <Link
@@ -162,8 +196,16 @@ function TaskRow({ task }: { task: Task }) {
         >
           {task.title}
         </p>
-        <StatusBadge status={task.status} />
+        <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+          {task.is_overdue && <OverdueBadge />}
+          <StatusBadge status={task.status} />
+        </div>
       </div>
+      {(task.start_date || task.due_date) && (
+        <p className="mt-1 text-xs text-muted">
+          <TaskDates task={task} />
+        </p>
+      )}
       {task.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {task.tags.map((tag) => (

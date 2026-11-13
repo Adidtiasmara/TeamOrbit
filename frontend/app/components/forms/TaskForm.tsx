@@ -6,6 +6,7 @@ import type { Task } from "../../lib/types";
 import {
   TITLE_MAX_LENGTH,
   titleLength,
+  validateDates,
   validateTitle,
 } from "../../lib/validation";
 import { Alert } from "../ui/Alert";
@@ -19,19 +20,25 @@ interface TaskFormProps {
   onCancel: () => void;
 }
 
+type ServerField = "title" | "description" | "start_date" | "due_date";
+
+const OPTIONAL = <span className="font-normal text-muted">(opsional)</span>;
+
 export function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
+  const [startDate, setStartDate] = useState(task?.start_date ?? "");
+  const [dueDate, setDueDate] = useState(task?.due_date ?? "");
   const [touched, setTouched] = useState(false);
-  const [serverErrors, setServerErrors] = useState<{
-    title?: string;
-    description?: string;
-  }>({});
+  const [serverErrors, setServerErrors] = useState<
+    Partial<Record<ServerField, string>>
+  >({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const length = titleLength(title);
   const titleError = (touched ? validateTitle(title) : null) ?? serverErrors.title;
+  const dueError = validateDates(startDate, dueDate) ?? serverErrors.due_date;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -39,7 +46,7 @@ export function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
     setServerErrors({});
     setFormError(null);
 
-    if (validateTitle(title)) {
+    if (validateTitle(title) || validateDates(startDate, dueDate)) {
       return;
     }
 
@@ -48,6 +55,8 @@ export function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
     const input = {
       title: title.trim(),
       description: description.trim() || null,
+      start_date: startDate || null,
+      due_date: dueDate || null,
     };
 
     try {
@@ -57,6 +66,8 @@ export function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
         setServerErrors({
           title: error.fieldError("title"),
           description: error.fieldError("description"),
+          start_date: error.fieldError("start_date"),
+          due_date: error.fieldError("due_date"),
         });
       } else {
         setFormError(errorMessage(error));
@@ -105,13 +116,42 @@ export function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
           {length} / {TITLE_MAX_LENGTH}
         </p>
 
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Field
+            id="task-start-date"
+            label={<>Tanggal mulai {OPTIONAL}</>}
+            error={serverErrors.start_date}
+          >
+            <input
+              id="task-start-date"
+              type="date"
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+              aria-invalid={Boolean(serverErrors.start_date)}
+              className={inputClassName(Boolean(serverErrors.start_date))}
+            />
+          </Field>
+          <Field
+            id="task-due-date"
+            label={<>Deadline {OPTIONAL}</>}
+            error={dueError}
+          >
+            <input
+              id="task-due-date"
+              type="date"
+              value={dueDate}
+              min={startDate || undefined}
+              onChange={(event) => setDueDate(event.target.value)}
+              aria-invalid={Boolean(dueError)}
+              aria-describedby={dueError ? errorId("task-due-date") : undefined}
+              className={inputClassName(Boolean(dueError))}
+            />
+          </Field>
+        </div>
+
         <Field
           id="task-description"
-          label={
-            <>
-              Deskripsi <span className="font-normal text-muted">(opsional)</span>
-            </>
-          }
+          label={<>Deskripsi {OPTIONAL}</>}
           error={serverErrors.description}
         >
           <textarea

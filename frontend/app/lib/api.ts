@@ -6,6 +6,7 @@ import type {
   Tag,
   Task,
   TaskStatus,
+  TaskSummary,
   User,
   UserSummary,
 } from "./types";
@@ -156,19 +157,25 @@ export function getMe(): Promise<User> {
 export interface CreateTaskInput {
   title: string;
   description: string | null;
+  /** Format YYYY-MM-DD, null kalau tidak diisi. */
+  start_date?: string | null;
+  due_date?: string | null;
 }
 
 /** Update parsial: cukup kirim field yang berubah, mis. { status }. */
-export interface UpdateTaskInput {
-  title?: string;
-  description?: string | null;
+export type UpdateTaskInput = Partial<CreateTaskInput> & {
   status?: TaskStatus;
-}
+};
 
 export function listTasks(status?: TaskStatus): Promise<Task[]> {
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
 
   return requestData<Task[]>("GET", `/tasks${query}`);
+}
+
+/** Statistik tugas yang terlihat oleh user yang login. */
+export function getTaskSummary(): Promise<TaskSummary> {
+  return requestData<TaskSummary>("GET", "/tasks/summary");
 }
 
 export function createTask(input: CreateTaskInput): Promise<Task> {

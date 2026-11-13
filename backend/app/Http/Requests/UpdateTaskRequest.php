@@ -28,6 +28,12 @@ class UpdateTaskRequest extends TaskRequest
             'title' => ['sometimes', 'required', 'string', 'max:100'],
             'description' => ['sometimes', 'nullable', 'string'],
             'status' => ['sometimes', 'required', Rule::in(Task::STATUSES)],
+            ...$this->dateRules(),
         ];
+    }
+
+    protected function existingTask(): ?Task
+    {
+        return $this->route('task');
     }
 }

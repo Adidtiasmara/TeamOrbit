@@ -23,6 +23,9 @@ class TaskResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
+            'start_date' => $this->start_date?->toDateString(),
+            'due_date' => $this->due_date?->toDateString(),
+            'is_overdue' => $this->isOverdue(),
             // null kalau akun pembuatnya sudah dihapus (created_by nullOnDelete).
             'created_by' => $this->creator ? new UserSummaryResource($this->creator) : null,
             'assignees' => UserSummaryResource::collection($this->assignees),
