@@ -1,82 +1,93 @@
 # TeamOrbit
 
-Aplikasi internal untuk mencatat dan membagi pekerjaan tim.
+Aplikasi web internal untuk mencatat dan membagi pekerjaan tim. Admin dapat mengelola seluruh tugas dan role pengguna, sedangkan member bekerja pada tugas yang ia buat atau yang ditugaskan kepadanya.
 
-## Stack
+**Teknologi:** Laravel 12 (PHP 8.3), MySQL 8.4, Next.js 15 (TypeScript, Tailwind CSS), Laravel Sanctum, Docker.
 
-- Backend: Laravel 12 + PHP 8.3 + MySQL
-- Frontend: Next.js 15 + TypeScript + Tailwind CSS
-- Auth: Laravel Sanctum
-- Container: Docker + docker-compose
+## Instalasi
 
-## Cara Menjalankan (Docker)
+Clone repositori:
 
-1. Copy environment:
+```bash
+git clone https://github.com/Adidtiasmara/TeamOrbit.git
+cd TeamOrbit
+```
 
-   ```bash
-   cp .env.example .env
-   ```
+Prasyarat:
 
-2. Pastikan APP_KEY sudah diisi di `.env`.
-3. Jalankan container:
+- **Dengan Docker (disarankan):** Docker Desktop atau Docker Engine dengan Docker Compose v2.
+- **Tanpa Docker:** PHP 8.3 (ekstensi `pdo_mysql` dan `mbstring`), Composer 2, MySQL 8, Node.js 24 dan npm.
 
-   ```bash
-   docker-compose up --build -d
-   ```
+## Menjalankan Aplikasi
 
-4. Jalankan migrasi dan seeder:
+### Dengan Docker
 
-   ```bash
-   docker exec teamorbit_backend php artisan migrate --seed
-   ```
+```bash
+docker compose up --build
+```
 
-5. Buka:
-   - Frontend: http://localhost:3000
-   - Backend API: http://localhost:8000/api
+Migrasi database dan akun contoh disiapkan otomatis oleh container backend, jadi tidak ada langkah tambahan. Setelah semua container berjalan, buka:
 
-## Cara Menjalankan (Lokal Manual)
+- Aplikasi web: http://localhost:3000
+- REST API: http://localhost:8000/api
 
-### Backend
+Hentikan dengan `docker compose down`. Tambahkan `-v` untuk sekaligus menghapus data database.
+
+Jika port `3000`, `8000`, atau `3307` sudah dipakai, salin `.env.example` di root repositori menjadi `.env`, ubah portnya, lalu jalankan ulang `docker compose up --build`.
+
+### Tanpa Docker
+
+**Backend** (terminal pertama):
 
 ```bash
 cd backend
+composer install
 cp .env.example .env
 php artisan key:generate
-# Sesuaikan DB_* di .env, lalu:
-php artisan migrate --seed
-php artisan serve --host=0.0.0.0 --port=8000
 ```
 
-### Frontend
+Ubah koneksi database di `backend/.env` sesuai MySQL Anda. Nilai `DB_HOST=db` hanya berlaku di Docker, jadi ganti menjadi `127.0.0.1`. 
+Jika mengugnakan laragon/xampp default maka dbusername dan password setting seperti berikut:
+DB_USERNAME=root
+DB_PASSWORD=
+
+Setelah itu jalankan:
+```bash
+php artisan migrate --seed
+php artisan serve --port=8000
+```
+
+**Frontend** (terminal kedua):
 
 ```bash
 cd frontend
+npm ci
 cp .env.example .env.local
-npm install
 npm run dev
 ```
 
-## Akun Demo
+Buka http://localhost:3000. Pastikan `NEXT_PUBLIC_API_URL` di `frontend/.env.local` mengarah ke `http://localhost:8000/api`.
+
+## Akun Contoh
+
+Semua akun dibuat oleh seeder dan memakai password `password`.
 
 | Role | Email | Password |
 | --- | --- | --- |
-| Admin | admin@teamorbit.test | password |
-| Member | budi@teamorbit.test | password |
+| Admin | `admin@teamorbit.test` | `password` |
+| Member | `budi@teamorbit.test` | `password` |
+| Member | `ani@teamorbit.test` | `password` |
+| Member | `citra@teamorbit.test` | `password` |
 
-## Struktur Branch
+Tombol **Isi admin** dan **Isi member** di halaman login mengisi kredensial tersebut secara otomatis.
 
-- `main`: kode stabil/release
-- `develop`: integrasi fitur
-- `feature/*`: satu fitur per branch
+## Asumsi
 
-## Fase Pengembangan
+1. Aplikasi dipakai oleh satu tim, tanpa konsep proyek atau workspace terpisah.
+2. Role hanya `admin` dan `member`. Akun hasil registrasi selalu member. Admin pertama berasal dari seeder, dan admin lain dipromosikan lewat halaman **Kelola pengguna**.
+3. Admin tidak dapat mengubah role dirinya sendiri, sehingga aplikasi selalu memiliki minimal satu admin.
+4. Admin melihat semua tugas. Member hanya melihat tugas yang ia buat atau yang ditugaskan kepadanya.
+5. Pembuat tugas tidak otomatis menjadi assignee. Assignee memiliki hak yang sama dengan pembuat untuk mengedit, mengubah status, menghapus, serta mengelola assignee dan tag tugas tersebut. 
 
-1. FASE 0 - Design: ERD, API Spec, RBAC, Wireframe
-2. FASE 1 - Setup: repo, docker, migrasi, seeder
-3. FASE 2 - Backend Auth
-4. FASE 3 - Backend Tugas + Assignee
-5. FASE 4 - Frontend Auth + Dashboard
-6. FASE 5 - Frontend Role
-7. FASE 6 - Fitur Tambahan (Admin Users, Tags)
-8. FASE 7 - Testing + Docker
-9. FASE 8 - README lengkap + Finish
+
+Dokumentasi desain (ERD, spesifikasi API, matriks hak akses, wireframe) tersedia di folder [`design/`](design/).
