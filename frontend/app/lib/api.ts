@@ -176,6 +176,10 @@ export function updateTask(
   return requestData<Task>("PUT", taskPath(taskId), input);
 }
 
+export function deleteTask(taskId: number | string): Promise<void> {
+  return request<void>("DELETE", taskPath(taskId));
+}
+
 // Assignees
 
 export function addAssignee(
