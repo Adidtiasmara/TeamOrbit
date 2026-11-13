@@ -242,6 +242,8 @@ Response 200:
 PUT /tasks/{id}
 ```
 
+Akses: Admin dan pembuat tugas boleh mengubah semua field. Assignee hanya boleh mengirim `status`; body berisi field lain dari assignee ditolak `403`. Hapus tugas, kelola assignee, dan pasang/lepas tag juga hanya untuk Admin dan pembuat.
+
 Body: field sama dengan create, tetapi semuanya opsional (update parsial). Hanya field yang dikirim yang divalidasi dan diubah; `title` yang dikirim tetap wajib terisi dan maksimal 100 karakter. Urutan tanggal dicek terhadap nilai yang tersimpan bila hanya salah satu tanggal dikirim; kirim `null` untuk mengosongkan tanggal. Contoh toggle status:
 
 ```json

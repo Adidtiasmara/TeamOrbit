@@ -214,7 +214,7 @@ class TaskTest extends TestCase
         $this->assertDatabaseHas('tasks', ['id' => $task->id, 'title' => 'Milik orang lain']);
     }
 
-    public function test_assignee_bisa_melihat_dan_mengubah_tugas(): void
+    public function test_assignee_bisa_melihat_dan_mengubah_status_tugas(): void
     {
         $member = User::factory()->create();
         $task = Task::factory()->create();
@@ -230,6 +230,29 @@ class TaskTest extends TestCase
         $this->putJson("/api/tasks/{$task->id}", ['status' => 'selesai'])
             ->assertStatus(200)
             ->assertJsonPath('data.status', 'selesai');
+    }
+
+    public function test_assignee_tidak_bisa_mengedit_atau_menghapus_tugas(): void
+    {
+        $member = User::factory()->create();
+        $task = Task::factory()->create(['title' => 'Milik pembuat']);
+        $task->assignees()->attach($member);
+
+        $this->actingAs($member, 'sanctum');
+
+        $this->putJson("/api/tasks/{$task->id}", ['title' => 'Diubah assignee'])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Akses ditolak.');
+        $this->putJson("/api/tasks/{$task->id}", ['status' => 'selesai', 'due_date' => '2026-12-01'])
+            ->assertStatus(403);
+        $this->deleteJson("/api/tasks/{$task->id}")->assertStatus(403);
+
+        $this->assertDatabaseHas('tasks', [
+            'id' => $task->id,
+            'title' => 'Milik pembuat',
+            'status' => 'belum_selesai',
+            'due_date' => null,
+        ]);
     }
 
     public function test_update_parsial_hanya_mengubah_field_yang_dikirim(): void
