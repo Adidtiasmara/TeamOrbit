@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 
 interface ModalProps {
   open: boolean;
@@ -15,6 +15,7 @@ interface ModalProps {
  */
 export function Modal({ open, title, onClose, children }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = ref.current;
@@ -25,7 +26,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
 
     if (open && !dialog.open) {
       dialog.showModal();
-      // showModal() memfokuskan tombol pertama (Tutup); arahkan ke input utama.
+      // showModal() memfokuskan tombol pertama (Tutup); arahkan ke elemen utama.
       dialog.querySelector<HTMLElement>("[data-autofocus]")?.focus();
     } else if (!open && dialog.open) {
       dialog.close();
@@ -35,7 +36,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   return (
     <dialog
       ref={ref}
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
       onClose={onClose}
       onClick={(event) => {
         // Klik di backdrop (di luar kotak modal) menutup modal.
@@ -46,7 +47,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
       className="m-auto w-[calc(100%-2rem)] max-w-lg rounded-xl border border-line bg-surface p-0 text-ink shadow-xl backdrop:bg-black/40"
     >
       <div className="flex items-center justify-between border-b border-line px-5 py-4">
-        <h2 id="modal-title" className="text-base font-semibold">
+        <h2 id={titleId} className="text-base font-semibold">
           {title}
         </h2>
         <button

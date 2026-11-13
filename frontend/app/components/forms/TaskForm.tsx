@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { ApiError, createTask, errorMessage } from "../../lib/api";
+import { ApiError, createTask, errorMessage, updateTask } from "../../lib/api";
 import type { Task } from "../../lib/types";
 import {
   TITLE_MAX_LENGTH,
@@ -13,13 +13,15 @@ import { Button } from "../ui/Button";
 import { errorId, Field, inputClassName } from "../ui/Field";
 
 interface TaskFormProps {
-  onCreated: (task: Task) => void;
+  /** Diisi untuk mode edit; kosong untuk membuat tugas baru. */
+  task?: Task;
+  onSaved: (task: Task) => void;
   onCancel: () => void;
 }
 
-export function TaskForm({ onCreated, onCancel }: TaskFormProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+export function TaskForm({ task, onSaved, onCancel }: TaskFormProps) {
+  const [title, setTitle] = useState(task?.title ?? "");
+  const [description, setDescription] = useState(task?.description ?? "");
   const [touched, setTouched] = useState(false);
   const [serverErrors, setServerErrors] = useState<{
     title?: string;
@@ -43,13 +45,13 @@ export function TaskForm({ onCreated, onCancel }: TaskFormProps) {
 
     setSubmitting(true);
 
+    const input = {
+      title: title.trim(),
+      description: description.trim() || null,
+    };
+
     try {
-      onCreated(
-        await createTask({
-          title: title.trim(),
-          description: description.trim() || null,
-        }),
-      );
+      onSaved(await (task ? updateTask(task.id, input) : createTask(input)));
     } catch (error) {
       if (error instanceof ApiError && error.status === 422) {
         setServerErrors({
@@ -127,7 +129,7 @@ export function TaskForm({ onCreated, onCancel }: TaskFormProps) {
           Batal
         </Button>
         <Button type="submit" variant="primary" loading={submitting}>
-          Simpan
+          {task ? "Simpan perubahan" : "Simpan"}
         </Button>
       </div>
     </form>

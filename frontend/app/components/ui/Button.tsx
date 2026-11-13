@@ -9,6 +9,11 @@ const VARIANTS: Record<Variant, string> = {
   ghost: "text-muted hover:bg-surface-2 hover:text-ink",
 };
 
+/** Kelas tombol, juga dipakai untuk <Link> yang tampil seperti tombol. */
+export function buttonClassName(variant: Variant = "secondary"): string {
+  return `inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]}`;
+}
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
   loading?: boolean;
@@ -30,7 +35,7 @@ export function Button({
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 ${VARIANTS[variant]} ${block ? "w-full" : ""} ${className}`}
+      className={`${buttonClassName(variant)} ${block ? "w-full" : ""} ${className}`}
       {...props}
     >
       {loading && (

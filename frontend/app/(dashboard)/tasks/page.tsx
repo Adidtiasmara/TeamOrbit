@@ -10,7 +10,10 @@ import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { Spinner, StateMessage } from "../../components/ui/StateMessage";
 import { StatusBadge } from "../../components/ui/StatusBadge";
+import { useAuth } from "../../hooks/useAuth";
 import { errorMessage, listTasks } from "../../lib/api";
+import { takeFlash } from "../../lib/flash";
+import { isAdmin } from "../../lib/permissions";
 import type { Task, TaskStatus } from "../../lib/types";
 
 type Filter = "semua" | TaskStatus;
@@ -28,12 +31,22 @@ const EMPTY_MESSAGES: Record<Filter, string> = {
 };
 
 export default function TasksPage() {
+  const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>("semua");
   const [reloadKey, setReloadKey] = useState(0);
   const [tasks, setTasks] = useState<Task[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+
+  // Pesan dari halaman sebelumnya, mis. setelah tugas dihapus.
+  useEffect(() => {
+    const flash = takeFlash();
+
+    if (flash) {
+      setNotice(flash);
+    }
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -117,6 +130,20 @@ export default function TasksPage() {
         })}
       </div>
 
+      <Alert>
+        {isAdmin(user) ? (
+          <>
+            Kamu login sebagai <strong>Admin</strong>: semua tugas tim tampil
+            di sini.
+          </>
+        ) : (
+          <>
+            Kamu login sebagai <strong>Member</strong>: hanya tugas yang kamu
+            buat atau yang ditugaskan kepadamu yang tampil.
+          </>
+        )}
+      </Alert>
+
       {notice && <Alert tone="success">{notice}</Alert>}
 
       {loadError ? (
@@ -143,7 +170,7 @@ export default function TasksPage() {
         onClose={() => setFormOpen(false)}
       >
         <TaskForm
-          onCreated={handleCreated}
+          onSaved={handleCreated}
           onCancel={() => setFormOpen(false)}
         />
       </Modal>

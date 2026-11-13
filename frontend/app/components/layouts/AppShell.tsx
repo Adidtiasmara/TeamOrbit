@@ -4,15 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { isAdmin } from "../../lib/permissions";
 import { Avatar } from "../ui/Avatar";
 import { Brand } from "../ui/Brand";
 import { Button } from "../ui/Button";
+import { RoleBadge } from "../ui/RoleBadge";
 
-const NAV_ITEMS = [{ href: "/tasks", label: "Tugas" }];
+const NAV_ITEMS = [
+  { href: "/tasks", label: "Tugas", adminOnly: false },
+  { href: "/users", label: "Admin Users", adminOnly: true },
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
   const pathname = usePathname();
+  const navItems = NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin(user));
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
 
@@ -41,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <p className="px-3 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">
             Menu
           </p>
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = pathname.startsWith(item.href);
 
             return (
@@ -94,6 +100,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <span className="hidden text-sm font-medium text-ink sm:inline">
                   {user.name}
                 </span>
+                <RoleBadge role={user.role} />
               </div>
             )}
             <Button
