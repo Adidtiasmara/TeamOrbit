@@ -150,6 +150,7 @@ Response 200:
       "status": "belum_selesai",
       "created_by": { "id": 1, "name": "..." },
       "assignees": [ { "id": 2, "name": "..." } ],
+      "tags": [ { "id": 1, "name": "urgent" } ],
       "created_at": "...",
       "updated_at": "..."
     }
@@ -279,6 +280,74 @@ Response 200:
   ]
 }
 ```
+
+## Tags
+
+Label bebas untuk mengelompokkan tugas. Semua user yang login boleh melihat dan membuat tag sesuai kebutuhan.
+
+### List Tags
+
+```
+GET /tags
+```
+
+Response 200 (urut nama):
+
+```json
+{
+  "data": [
+    { "id": 1, "name": "urgent" }
+  ]
+}
+```
+
+### Create Tag
+
+```
+POST /tags
+```
+
+Body:
+
+```json
+{
+  "name": "string, required, max 50 karakter, unik"
+}
+```
+
+Spasi di awal/akhir dipangkas. Nama unik tanpa membedakan huruf besar/kecil (`Urgent` = `urgent`).
+
+Response 201:
+
+```json
+{
+  "data": { "id": 1, "name": "urgent" }
+}
+```
+
+Error `422` jika nama kosong, lebih dari 50 karakter, atau sudah dipakai (`"Tag dengan nama ini sudah ada."`).
+
+### Attach Tag ke Tugas
+
+```
+POST /tasks/{id}/tags/{tagId}
+```
+
+Tanpa body. Response 201 dengan data tugas terbaru (termasuk `tags`, urut nama).
+
+Error `422` jika tag sudah terpasang (`errors.tag_id`); `403` jika tidak berhak mengelola tugas tersebut (aturan sama dengan edit tugas); `404` jika tugas atau tag tidak ada.
+
+### Detach Tag dari Tugas
+
+```
+DELETE /tasks/{id}/tags/{tagId}
+```
+
+Response 204.
+
+Error `404` jika tugas/tag tidak ada atau tag tidak terpasang di tugas tersebut (`"Tag tidak terpasang di tugas ini."`); `403` jika tidak berhak.
+
+Menghapus tugas ikut melepas semua tag-nya; tag itu sendiri tetap ada.
 
 ## Users (Admin Only)
 
