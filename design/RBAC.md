@@ -19,6 +19,7 @@
 | Ubah status tugas | Y | Y (milik atau ditugaskan) |
 | Tambah assignee pada tugas | Y (semua) | Y (milik atau ditugaskan) |
 | Hapus assignee pada tugas | Y (semua) | Y (milik atau ditugaskan) |
+| Lihat daftar user untuk dropdown assignee (id & nama saja) | Y | Y |
 | List semua user | Y | N |
 | Ubah role user | Y (kecuali dirinya sendiri) | N |
 

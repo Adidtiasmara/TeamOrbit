@@ -30,9 +30,9 @@ Sukses (200 / 201):
 
 Error:
 
-- `401` — belum login, token tidak valid, atau token sudah di-revoke.
-- `403` — login tapi tidak berhak (mis. Member mengakses tugas orang lain, non-admin akses `/users`).
-- `404` — resource tidak ditemukan.
+- `401` — belum login, token tidak valid, atau token sudah di-revoke. Body: `{"message": "Belum login atau token tidak valid."}`
+- `403` — login tapi tidak berhak (mis. Member mengakses tugas orang lain, non-admin akses `/users`). Body: `{"message": "Akses ditolak."}`
+- `404` — resource tidak ditemukan. Body: `{"message": "Data tidak ditemukan."}`
 - `422` — validasi gagal, disertai `errors` per-field untuk ditampilkan di form:
 
 ```json
@@ -134,7 +134,9 @@ GET /tasks?status=belum_selesai|selesai
 
 Query parameter:
 
-- `status` (optional): filter status tugas.
+- `status` (optional): filter status tugas. Kosong atau tidak dikirim = semua tugas yang berhak dilihat. Nilai selain `belum_selesai`/`selesai` ditolak `422`.
+
+Urutan: tugas terbaru lebih dulu. Tanpa paginasi.
 
 Response 200:
 
@@ -176,6 +178,8 @@ Body:
 }
 ```
 
+Spasi di awal/akhir `title` dipangkas sebelum validasi, jadi batas 100 karakter berlaku setelah trim. Pembuat tugas tidak otomatis menjadi assignee (`assignees` kosong).
+
 Response 201:
 
 ```json
@@ -204,7 +208,13 @@ Response 200:
 PUT /tasks/{id}
 ```
 
-Body: sama dengan create.
+Body: field sama dengan create, tetapi semuanya opsional (update parsial). Hanya field yang dikirim yang divalidasi dan diubah; `title` yang dikirim tetap wajib terisi dan maksimal 100 karakter. Contoh toggle status:
+
+```json
+{
+  "status": "selesai"
+}
+```
 
 Response 200:
 
@@ -249,6 +259,26 @@ DELETE /tasks/{id}/assignees/{userId}
 ```
 
 Response 204.
+
+Error `404` jika tugas atau user tidak ada, atau user bukan assignee tugas tersebut (`{"message": "User bukan assignee tugas ini."}`); `403` jika tidak berhak mengelola tugas tersebut.
+
+### Assignable Users
+
+```
+GET /assignable-users
+```
+
+Daftar user untuk dropdown tambah assignee, urut nama. Bisa diakses semua user yang login (Admin dan Member). Hanya berisi `id` dan `name`.
+
+Response 200:
+
+```json
+{
+  "data": [
+    { "id": 2, "name": "..." }
+  ]
+}
+```
 
 ## Users (Admin Only)
 
