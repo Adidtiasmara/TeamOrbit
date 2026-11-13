@@ -15,6 +15,11 @@ export interface UserSummary {
   name: string;
 }
 
+export interface Tag {
+  id: number;
+  name: string;
+}
+
 export interface Task {
   id: number;
   title: string;
@@ -23,6 +28,8 @@ export interface Task {
   /** null kalau akun pembuatnya sudah dihapus. */
   created_by: UserSummary | null;
   assignees: UserSummary[];
+  /** Urut nama. */
+  tags: Tag[];
   created_at: string;
   updated_at: string;
 }

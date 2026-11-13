@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AssigneeForm } from "../../../components/forms/AssigneeForm";
+import { TagForm } from "../../../components/forms/TagForm";
 import { TaskForm } from "../../../components/forms/TaskForm";
 import { Alert } from "../../../components/ui/Alert";
 import { Avatar } from "../../../components/ui/Avatar";
@@ -11,6 +12,7 @@ import { Button } from "../../../components/ui/Button";
 import { Modal } from "../../../components/ui/Modal";
 import { Spinner, StateMessage } from "../../../components/ui/StateMessage";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
+import { TagChip } from "../../../components/ui/TagChip";
 import { useAuth } from "../../../hooks/useAuth";
 import {
   ApiError,
@@ -18,13 +20,15 @@ import {
   errorMessage,
   getTask,
   listAssignableUsers,
+  listTags,
   removeAssignee,
+  removeTaskTag,
   updateTask,
 } from "../../../lib/api";
 import { setFlash } from "../../../lib/flash";
 import { formatDateTime } from "../../../lib/format";
 import { canManageTask } from "../../../lib/permissions";
-import type { Task, UserSummary } from "../../../lib/types";
+import type { Tag, Task, UserSummary } from "../../../lib/types";
 
 export default function TaskDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -62,6 +66,8 @@ function TaskDetail({ taskId }: { taskId: string }) {
   const [task, setTask] = useState<Task | null>(null);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [users, setUsers] = useState<UserSummary[]>([]);
+  const [allTags, setAllTags] = useState<Tag[]>([]);
+  const [removingTagId, setRemovingTagId] = useState<number | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [togglingStatus, setTogglingStatus] = useState(false);
@@ -91,6 +97,15 @@ function TaskDetail({ taskId }: { taskId: string }) {
       .then((result) => {
         if (!cancelled) {
           setUsers(result);
+        }
+      })
+      .catch(() => undefined);
+
+    // Semua tag untuk pilihan cepat; kalau gagal, tag tetap bisa dibuat lewat input.
+    listTags()
+      .then((result) => {
+        if (!cancelled) {
+          setAllTags(result);
         }
       })
       .catch(() => undefined);
@@ -173,6 +188,20 @@ function TaskDetail({ taskId }: { taskId: string }) {
     setRemovingId(null);
   };
 
+  const handleRemoveTag = async (tag: Tag) => {
+    setRemovingTagId(tag.id);
+    clearMessages();
+
+    try {
+      await removeTaskTag(task.id, tag.id);
+      setTask({ ...task, tags: task.tags.filter((item) => item.id !== tag.id) });
+    } catch (error) {
+      setActionError(errorMessage(error));
+    } finally {
+      setRemovingTagId(null);
+    }
+  };
+
   const handleDelete = async () => {
     setDeleting(true);
     setDeleteError(null);
@@ -250,6 +279,42 @@ function TaskDetail({ taskId }: { taskId: string }) {
             <span className="text-muted">Tidak ada deskripsi.</span>
           )}
         </p>
+      </section>
+
+      <section className="space-y-4 rounded-xl border border-line bg-surface p-5">
+        <h2 className="text-sm font-semibold text-ink">Tag</h2>
+
+        {task.tags.length === 0 ? (
+          <p className="text-sm text-muted">Belum ada tag.</p>
+        ) : (
+          <ul className="flex flex-wrap gap-2">
+            {task.tags.map((tag) => (
+              <li key={tag.id} className="max-w-full">
+                <TagChip
+                  name={tag.name}
+                  onRemove={canManage ? () => handleRemoveTag(tag) : undefined}
+                  removing={removingTagId !== null}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {canManage && (
+          <TagForm
+            task={task}
+            tags={allTags}
+            onTagCreated={(tag) =>
+              setAllTags((current) =>
+                [...current, tag].sort((a, b) => a.name.localeCompare(b.name)),
+              )
+            }
+            onAttached={(updated) => {
+              clearMessages();
+              setTask(updated);
+            }}
+          />
+        )}
       </section>
 
       <section className="space-y-4 rounded-xl border border-line bg-surface p-5">

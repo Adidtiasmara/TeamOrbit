@@ -3,6 +3,7 @@ import type {
   AuthPayload,
   FieldErrors,
   Role,
+  Tag,
   Task,
   TaskStatus,
   User,
@@ -204,6 +205,36 @@ export function removeAssignee(
 
 export function listAssignableUsers(): Promise<UserSummary[]> {
   return requestData<UserSummary[]>("GET", "/assignable-users");
+}
+
+// Tags
+
+export function listTags(): Promise<Tag[]> {
+  return requestData<Tag[]>("GET", "/tags");
+}
+
+export function createTag(name: string): Promise<Tag> {
+  return requestData<Tag>("POST", "/tags", { name });
+}
+
+export function addTaskTag(
+  taskId: number | string,
+  tagId: number,
+): Promise<Task> {
+  return requestData<Task>(
+    "POST",
+    `${taskPath(taskId)}/tags/${encodeURIComponent(String(tagId))}`,
+  );
+}
+
+export function removeTaskTag(
+  taskId: number | string,
+  tagId: number,
+): Promise<void> {
+  return request<void>(
+    "DELETE",
+    `${taskPath(taskId)}/tags/${encodeURIComponent(String(tagId))}`,
+  );
 }
 
 // Users (khusus Admin)

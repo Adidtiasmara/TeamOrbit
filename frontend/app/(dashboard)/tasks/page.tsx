@@ -10,6 +10,7 @@ import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { Spinner, StateMessage } from "../../components/ui/StateMessage";
 import { StatusBadge } from "../../components/ui/StatusBadge";
+import { TagChip } from "../../components/ui/TagChip";
 import { useAuth } from "../../hooks/useAuth";
 import { errorMessage, listTasks } from "../../lib/api";
 import { takeFlash } from "../../lib/flash";
@@ -194,6 +195,13 @@ function TaskRow({ task }: { task: Task }) {
         </p>
         <StatusBadge status={task.status} />
       </div>
+      {task.tags.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {task.tags.map((tag) => (
+            <TagChip key={tag.id} name={tag.name} size="sm" />
+          ))}
+        </div>
+      )}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted">
         {task.assignees.length > 0 ? (
           <div className="flex items-center gap-2">
