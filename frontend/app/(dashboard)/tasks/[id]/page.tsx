@@ -4,21 +4,26 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { AssigneeForm } from "../../../components/forms/AssigneeForm";
+import { TaskForm } from "../../../components/forms/TaskForm";
 import { Alert } from "../../../components/ui/Alert";
 import { Avatar } from "../../../components/ui/Avatar";
 import { Button } from "../../../components/ui/Button";
+import { Modal } from "../../../components/ui/Modal";
 import { Spinner, StateMessage } from "../../../components/ui/StateMessage";
 import { StatusBadge } from "../../../components/ui/StatusBadge";
 import { useAuth } from "../../../hooks/useAuth";
 import {
   ApiError,
+  deleteTask,
   errorMessage,
   getTask,
   listAssignableUsers,
   removeAssignee,
   updateTask,
 } from "../../../lib/api";
+import { setFlash } from "../../../lib/flash";
 import { formatDateTime } from "../../../lib/format";
+import { canManageTask } from "../../../lib/permissions";
 import type { Task, UserSummary } from "../../../lib/types";
 
 export default function TaskDetailPage() {
@@ -58,8 +63,13 @@ function TaskDetail({ taskId }: { taskId: string }) {
   const [loadError, setLoadError] = useState<unknown>(null);
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [togglingStatus, setTogglingStatus] = useState(false);
   const [removingId, setRemovingId] = useState<number | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,10 +114,16 @@ function TaskDetail({ taskId }: { taskId: string }) {
   }
 
   const done = task.status === "selesai";
+  const canManage = canManageTask(user, task);
+
+  const clearMessages = () => {
+    setActionError(null);
+    setNotice(null);
+  };
 
   const handleToggleStatus = async () => {
     setTogglingStatus(true);
-    setActionError(null);
+    clearMessages();
 
     try {
       setTask(
@@ -124,7 +140,7 @@ function TaskDetail({ taskId }: { taskId: string }) {
 
   const handleRemove = async (assignee: UserSummary) => {
     setRemovingId(assignee.id);
-    setActionError(null);
+    clearMessages();
 
     try {
       await removeAssignee(task.id, assignee.id);
@@ -140,6 +156,7 @@ function TaskDetail({ taskId }: { taskId: string }) {
         setTask(await getTask(task.id));
       } catch (error) {
         if (error instanceof ApiError && error.status === 403) {
+          setFlash(`Kamu tidak lagi menjadi assignee tugas "${task.title}".`);
           router.replace("/tasks");
           return;
         }
@@ -156,6 +173,22 @@ function TaskDetail({ taskId }: { taskId: string }) {
     setRemovingId(null);
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deleteTask(task.id);
+    } catch (error) {
+      setDeleteError(errorMessage(error));
+      setDeleting(false);
+      return;
+    }
+
+    setFlash(`Tugas "${task.title}" dihapus.`);
+    router.replace("/tasks");
+  };
+
   return (
     <div className="space-y-6">
       <BackLink />
@@ -167,12 +200,35 @@ function TaskDetail({ taskId }: { taskId: string }) {
           </h1>
           <StatusBadge status={task.status} />
         </div>
-        <Button onClick={handleToggleStatus} loading={togglingStatus}>
-          {done ? "Tandai belum selesai" : "Tandai selesai"}
-        </Button>
+        {canManage && (
+          <div className="flex flex-wrap gap-2">
+            <Button onClick={handleToggleStatus} loading={togglingStatus}>
+              {done ? "Tandai belum selesai" : "Tandai selesai"}
+            </Button>
+            <Button
+              onClick={() => {
+                clearMessages();
+                setEditOpen(true);
+              }}
+            >
+              Edit
+            </Button>
+            <Button
+              variant="danger"
+              onClick={() => {
+                clearMessages();
+                setDeleteError(null);
+                setDeleteOpen(true);
+              }}
+            >
+              Hapus
+            </Button>
+          </div>
+        )}
       </div>
 
       {actionError && <Alert tone="error">{actionError}</Alert>}
+      {notice && <Alert tone="success">{notice}</Alert>}
 
       <section className="rounded-xl border border-line bg-surface p-5">
         <dl className="grid gap-3 text-sm sm:grid-cols-[10rem_1fr]">
@@ -216,45 +272,89 @@ function TaskDetail({ taskId }: { taskId: string }) {
               >
                 <Avatar name={assignee.name} size="sm" />
                 <span className="text-ink">{assignee.name}</span>
-                <button
-                  type="button"
-                  onClick={() => handleRemove(assignee)}
-                  disabled={removingId !== null}
-                  aria-label={`Hapus ${assignee.name} dari assignee`}
-                  className="rounded-full p-0.5 text-muted hover:bg-danger-soft hover:text-danger disabled:opacity-50"
-                >
-                  <svg
-                    aria-hidden
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                {canManage && (
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(assignee)}
+                    disabled={removingId !== null}
+                    aria-label={`Hapus ${assignee.name} dari assignee`}
+                    className="rounded-full p-0.5 text-muted hover:bg-danger-soft hover:text-danger disabled:opacity-50"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
+                    <svg
+                      aria-hidden
+                      width="14"
+                      height="14"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
               </li>
             ))}
           </ul>
         )}
 
-        {users.length > 0 && (
+        {canManage && users.length > 0 && (
           <AssigneeForm
             task={task}
             users={users}
             onAdded={(updated) => {
-              setActionError(null);
+              clearMessages();
               setTask(updated);
             }}
           />
         )}
       </section>
+
+      <Modal open={editOpen} title="Edit tugas" onClose={() => setEditOpen(false)}>
+        <TaskForm
+          task={task}
+          onSaved={(updated) => {
+            setEditOpen(false);
+            setTask(updated);
+            setNotice("Perubahan tugas disimpan.");
+          }}
+          onCancel={() => setEditOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        open={deleteOpen}
+        title="Hapus tugas?"
+        onClose={() => {
+          if (!deleting) {
+            setDeleteOpen(false);
+          }
+        }}
+      >
+        <div className="space-y-3 px-5 py-4 text-sm text-ink">
+          {deleteError && <Alert tone="error">{deleteError}</Alert>}
+          <p>
+            Tugas <strong className="break-words">&quot;{task.title}&quot;</strong>{" "}
+            beserta daftar assignee-nya akan dihapus permanen.
+          </p>
+        </div>
+        <div className="flex justify-end gap-2 border-t border-line px-5 py-4">
+          <Button
+            data-autofocus
+            onClick={() => setDeleteOpen(false)}
+            disabled={deleting}
+          >
+            Batal
+          </Button>
+          <Button variant="danger" onClick={handleDelete} loading={deleting}>
+            Hapus tugas
+          </Button>
+        </div>
+      </Modal>
     </div>
   );
 }
