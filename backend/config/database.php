@@ -44,6 +44,31 @@ return [
             'transaction_mode' => 'DEFERRED',
         ],
 
+        // Koneksi khusus test (phpunit.xml memaksa DB_CONNECTION=testing).
+        // Hanya membaca DB_TEST_*, jadi DB_* milik aplikasi (mis. dari
+        // docker-compose) tidak pernah dipakai, apalagi dikosongkan, oleh test.
+        // Default SQLite in-memory; CI memakai MySQL lewat DB_TEST_DRIVER=mysql.
+        'testing' => env('DB_TEST_DRIVER', 'sqlite') === 'mysql' ? [
+            'driver' => 'mysql',
+            'host' => env('DB_TEST_HOST', '127.0.0.1'),
+            'port' => env('DB_TEST_PORT', '3306'),
+            'database' => env('DB_TEST_DATABASE', 'teamorbit_test'),
+            'username' => env('DB_TEST_USERNAME', 'root'),
+            'password' => env('DB_TEST_PASSWORD', ''),
+            'unix_socket' => '',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+        ] : [
+            'driver' => 'sqlite',
+            'database' => ':memory:',
+            'prefix' => '',
+            'foreign_key_constraints' => true,
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DB_URL'),

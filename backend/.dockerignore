@@ -1,0 +1,22 @@
+# Dependency & file lokal: dibangun ulang di dalam image.
+vendor
+node_modules
+.env
+.env.*
+!.env.example
+.phpunit.result.cache
+.phpunit.cache
+
+# Isi cache/log lokal (folder-nya tetap ikut lewat .gitignore di dalamnya).
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+storage/logs/*
+!storage/logs/.gitignore
+storage/framework/cache/data/*
+!storage/framework/cache/data/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/framework/testing/*
+!storage/framework/testing/.gitignore

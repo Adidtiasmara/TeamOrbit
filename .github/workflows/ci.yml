@@ -1,0 +1,108 @@
+name: CI
+
+# Jalan otomatis di setiap PR ke develop/main dan setiap push ke develop/main.
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (PHPUnit + Pint, MySQL 8.4)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          # Hanya untuk database test sementara di runner CI, bukan rahasia.
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: teamorbit_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_mysql, pdo_sqlite
+          coverage: none
+
+      - name: Cache Composer
+        uses: actions/cache@v6
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ runner.os }}-${{ hashFiles('backend/composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-
+
+      - name: Install dependency
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Siapkan .env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Cek gaya kode (Pint)
+        run: vendor/bin/pint --test
+
+      - name: Test (PHPUnit di MySQL)
+        env:
+          DB_TEST_DRIVER: mysql
+          DB_TEST_HOST: 127.0.0.1
+          DB_TEST_PORT: "3306"
+          DB_TEST_DATABASE: teamorbit_test
+          DB_TEST_USERNAME: root
+          DB_TEST_PASSWORD: root
+        run: php artisan test
+
+  frontend:
+    name: Frontend (lint, tipe, Vitest, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependency
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Cek tipe
+        run: npm run typecheck
+
+      - name: Test (Vitest)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:8000/api
