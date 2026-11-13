@@ -314,6 +314,8 @@ Body:
 
 Response 200 dengan data user terbaru.
 
-Error `422` jika mencoba mengubah role diri sendiri (Admin tidak boleh mengubah role-nya sendiri); `404` jika user tidak ada.
+Error `422` jika mencoba mengubah role diri sendiri (Admin tidak boleh mengubah role-nya sendiri), dengan `errors.role: ["Kamu tidak bisa mengubah role akunmu sendiri."]`, atau jika `role` bukan `admin`/`member`; `404` jika user tidak ada.
 
-Akses: Admin saja.
+Akses: Admin saja. Non-admin selalu `403`, termasuk untuk `id` user yang tidak ada (role dicek sebelum data dicari).
+
+Daftar user (`GET /users`) diurutkan berdasarkan nama. Perubahan role langsung berlaku untuk token user tersebut yang sudah ada.
