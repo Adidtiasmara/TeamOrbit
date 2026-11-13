@@ -104,7 +104,7 @@ class AuthTest extends TestCase
             ->assertStatus(204);
 
         // RequestGuard meng-cache user antar request di lingkungan test;
-        // reset guard agar request berikutnya merevolusi token dari nol
+        // reset guard agar request berikutnya me-resolve ulang token dari awal
         // (di produksi tiap HTTP request adalah proses baru).
         $this->app->make('auth')->forgetGuards();
 
@@ -113,7 +113,7 @@ class AuthTest extends TestCase
             ->assertStatus(401);
     }
 
-    public function test_role_middleware_hanya_menerima_role_yaksesuarukan(): void
+    public function test_role_middleware_hanya_menerima_role_yang_sesuai(): void
     {
         Route::get('/testing/admin-only', fn () => response()->json(['data' => 'ok']))
             ->middleware(['auth:sanctum', 'role:admin']);
