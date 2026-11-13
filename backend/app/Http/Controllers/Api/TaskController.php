@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ListTasksRequest;
+use App\Http\Requests\StoreTaskRequest;
+use App\Http\Requests\UpdateTaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Database\Eloquent\Builder;
@@ -11,26 +14,15 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
-    private const TITLE_MESSAGE = 'Judul wajib diisi, maksimal 100 karakter.';
-
-    private const STATUS_MESSAGE = 'Status harus belum_selesai atau selesai.';
-
-    public function index(Request $request): AnonymousResourceCollection
+    public function index(ListTasksRequest $request): AnonymousResourceCollection
     {
-        $filters = $request->validate([
-            'status' => ['nullable', Rule::in(Task::STATUSES)],
-        ], [
-            'status.in' => self::STATUS_MESSAGE,
-        ]);
-
         $tasks = Task::query()
             ->visibleTo($request->user())
             ->when(
-                $filters['status'] ?? null,
+                $request->validated('status'),
                 fn (Builder $query, string $status) => $query->where('status', $status),
             )
             ->with(Task::RESOURCE_RELATIONS)
@@ -41,17 +33,29 @@ class TaskController extends Controller
         return TaskResource::collection($tasks);
     }
 
-    public function store(Request $request): JsonResponse
+    /**
+     * Statistik tugas yang terlihat oleh user: Admin seluruh tugas tim,
+     * Member hanya tugas yang ia buat atau ditugaskan kepadanya.
+     */
+    public function summary(Request $request): JsonResponse
     {
-        // Spasi di awal/akhir judul sudah dipangkas middleware TrimStrings,
-        // jadi batas 100 karakter berlaku untuk judul setelah trim.
-        $data = $request->validate([
-            'title' => ['required', 'string', 'max:100'],
-            'description' => ['nullable', 'string'],
-            'status' => ['sometimes', 'required', Rule::in(Task::STATUSES)],
-        ], $this->messages());
+        $visible = fn () => Task::query()->visibleTo($request->user());
 
-        $task = $request->user()->createdTasks()->create($data);
+        $total = $visible()->count();
+        $done = $visible()->where('status', Task::STATUS_DONE)->count();
+
+        return response()->json(['data' => [
+            'total' => $total,
+            'done' => $done,
+            'pending' => $total - $done,
+            'overdue' => $visible()->overdue()->count(),
+            'percent_done' => $total === 0 ? 0 : (int) round($done / $total * 100),
+        ]]);
+    }
+
+    public function store(StoreTaskRequest $request): JsonResponse
+    {
+        $task = $request->user()->createdTasks()->create($request->validated());
 
         return (new TaskResource($task->load(Task::RESOURCE_RELATIONS)))
             ->response()
@@ -66,20 +70,11 @@ class TaskController extends Controller
     }
 
     /**
-     * Update parsial: hanya field yang dikirim yang divalidasi dan diubah,
-     * jadi toggle status cukup mengirim {"status": "selesai"}.
+     * Hak akses dan validasi parsial ditangani UpdateTaskRequest.
      */
-    public function update(Request $request, Task $task): TaskResource
+    public function update(UpdateTaskRequest $request, Task $task): TaskResource
     {
-        Gate::authorize('update', $task);
-
-        $data = $request->validate([
-            'title' => ['sometimes', 'required', 'string', 'max:100'],
-            'description' => ['sometimes', 'nullable', 'string'],
-            'status' => ['sometimes', 'required', Rule::in(Task::STATUSES)],
-        ], $this->messages());
-
-        $task->update($data);
+        $task->update($request->validated());
 
         return new TaskResource($task->load(Task::RESOURCE_RELATIONS));
     }
@@ -91,20 +86,5 @@ class TaskController extends Controller
         $task->delete();
 
         return response()->noContent();
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function messages(): array
-    {
-        return [
-            'title.required' => self::TITLE_MESSAGE,
-            'title.string' => self::TITLE_MESSAGE,
-            'title.max' => self::TITLE_MESSAGE,
-            'description.string' => 'Deskripsi harus berupa teks.',
-            'status.required' => self::STATUS_MESSAGE,
-            'status.in' => self::STATUS_MESSAGE,
-        ];
     }
 }

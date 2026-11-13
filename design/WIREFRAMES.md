@@ -38,7 +38,7 @@ Buka `mockup.html` di browser untuk melihat UI secara interaktif.
 - Tombol kembali ke dashboard
 - Judul tugas + status (bisa di-toggle selesai/belum selesai)
 - Deskripsi, dibuat oleh
-- Tombol Edit/Hapus hanya tampil jika user berhak (Admin: semua tugas; Member: milik/ditugaskan), selain itu backend menolak dengan 403
+- Tombol Edit/Hapus dan kelola assignee/tag hanya tampil untuk Admin dan pembuat tugas; assignee hanya mendapat tombol ubah status. Selain itu backend menolak dengan 403
 - Panel assignee: daftar assignee dengan tombol hapus per orang, form tambah assignee (dropdown daftar user)
 - Pembuat tugas tidak otomatis masuk daftar assignee; ia menambahkan dirinya secara eksplisit bila mau
 

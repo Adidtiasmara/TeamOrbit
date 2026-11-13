@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes } from "react";
+import { SpinnerIcon } from "./Icons";
 
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 
@@ -38,12 +39,7 @@ export function Button({
       className={`${buttonClassName(variant)} ${block ? "w-full" : ""} ${className}`}
       {...props}
     >
-      {loading && (
-        <span
-          aria-hidden
-          className="size-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-        />
-      )}
+      {loading && <SpinnerIcon />}
       {children}
     </button>
   );

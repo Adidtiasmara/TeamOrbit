@@ -4,8 +4,10 @@ import type {
   FieldErrors,
   Role,
   Tag,
+  TagColor,
   Task,
   TaskStatus,
+  TaskSummary,
   User,
   UserSummary,
 } from "./types";
@@ -37,8 +39,16 @@ export class ApiError extends Error {
   }
 }
 
-export function errorMessage(error: unknown): string {
-  return error instanceof ApiError ? error.message : GENERIC_ERROR;
+/**
+ * Pesan untuk ditampilkan ke user. Kalau `field` diisi, pesan error field
+ * itu didahulukan (mis. "User sudah menjadi assignee tugas ini.").
+ */
+export function errorMessage(error: unknown, field?: string): string {
+  if (!(error instanceof ApiError)) {
+    return GENERIC_ERROR;
+  }
+
+  return (field ? error.fieldError(field) : undefined) ?? error.message;
 }
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
@@ -148,19 +158,25 @@ export function getMe(): Promise<User> {
 export interface CreateTaskInput {
   title: string;
   description: string | null;
+  /** Format YYYY-MM-DD, null kalau tidak diisi. */
+  start_date?: string | null;
+  due_date?: string | null;
 }
 
 /** Update parsial: cukup kirim field yang berubah, mis. { status }. */
-export interface UpdateTaskInput {
-  title?: string;
-  description?: string | null;
+export type UpdateTaskInput = Partial<CreateTaskInput> & {
   status?: TaskStatus;
-}
+};
 
 export function listTasks(status?: TaskStatus): Promise<Task[]> {
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
 
   return requestData<Task[]>("GET", `/tasks${query}`);
+}
+
+/** Statistik tugas yang terlihat oleh user yang login. */
+export function getTaskSummary(): Promise<TaskSummary> {
+  return requestData<TaskSummary>("GET", "/tasks/summary");
 }
 
 export function createTask(input: CreateTaskInput): Promise<Task> {
@@ -213,8 +229,8 @@ export function listTags(): Promise<Tag[]> {
   return requestData<Tag[]>("GET", "/tags");
 }
 
-export function createTag(name: string): Promise<Tag> {
-  return requestData<Tag>("POST", "/tags", { name });
+export function createTag(name: string, color: TagColor): Promise<Tag> {
+  return requestData<Tag>("POST", "/tags", { name, color });
 }
 
 export function addTaskTag(

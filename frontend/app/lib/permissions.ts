@@ -5,8 +5,8 @@ export function isAdmin(user: User | null): boolean {
 }
 
 /**
- * Sama dengan TaskPolicy di backend (design/RBAC.md): Admin boleh semua
- * tugas, Member hanya tugas yang ia buat atau yang ditugaskan kepadanya.
+ * Sama dengan TaskPolicy di backend (design/RBAC.md): edit, hapus, dan
+ * kelola assignee/tag hanya untuk Admin atau pembuat tugas.
  * Hanya untuk menampilkan/menyembunyikan tombol; backend tetap memeriksa.
  */
 export function canManageTask(user: User | null, task: Task): boolean {
@@ -14,9 +14,17 @@ export function canManageTask(user: User | null, task: Task): boolean {
     return false;
   }
 
+  return isAdmin(user) || task.created_by?.id === user.id;
+}
+
+/** Ubah status: pengelola tugas ditambah assignee. */
+export function canUpdateStatus(user: User | null, task: Task): boolean {
+  if (!user) {
+    return false;
+  }
+
   return (
-    isAdmin(user) ||
-    task.created_by?.id === user.id ||
+    canManageTask(user, task) ||
     task.assignees.some((assignee) => assignee.id === user.id)
   );
 }

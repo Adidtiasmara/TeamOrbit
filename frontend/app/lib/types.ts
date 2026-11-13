@@ -15,9 +15,21 @@ export interface UserSummary {
   name: string;
 }
 
+/** Palet warna tag; sama dengan Tag::COLORS di backend. */
+export type TagColor =
+  | "abu"
+  | "merah"
+  | "oranye"
+  | "kuning"
+  | "hijau"
+  | "biru"
+  | "ungu"
+  | "merah_muda";
+
 export interface Tag {
   id: number;
   name: string;
+  color: TagColor;
 }
 
 export interface Task {
@@ -25,6 +37,11 @@ export interface Task {
   title: string;
   description: string | null;
   status: TaskStatus;
+  /** Format YYYY-MM-DD, null kalau tidak diisi. */
+  start_date: string | null;
+  due_date: string | null;
+  /** Belum selesai dan deadline sudah lewat (dihitung backend). */
+  is_overdue: boolean;
   /** null kalau akun pembuatnya sudah dihapus. */
   created_by: UserSummary | null;
   assignees: UserSummary[];
@@ -32,6 +49,14 @@ export interface Task {
   tags: Tag[];
   created_at: string;
   updated_at: string;
+}
+
+export interface TaskSummary {
+  total: number;
+  done: number;
+  pending: number;
+  overdue: number;
+  percent_done: number;
 }
 
 export interface AuthPayload {

@@ -2,9 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Models\Tag;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -25,19 +23,13 @@ class TaskResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status,
+            'start_date' => $this->start_date?->toDateString(),
+            'due_date' => $this->due_date?->toDateString(),
+            'is_overdue' => $this->isOverdue(),
             // null kalau akun pembuatnya sudah dihapus (created_by nullOnDelete).
-            'created_by' => $this->creator ? [
-                'id' => $this->creator->id,
-                'name' => $this->creator->name,
-            ] : null,
-            'assignees' => $this->assignees
-                ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name])
-                ->values()
-                ->all(),
-            'tags' => $this->tags
-                ->map(fn (Tag $tag) => ['id' => $tag->id, 'name' => $tag->name])
-                ->values()
-                ->all(),
+            'created_by' => $this->creator ? new UserSummaryResource($this->creator) : null,
+            'assignees' => UserSummaryResource::collection($this->assignees),
+            'tags' => TagResource::collection($this->tags),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

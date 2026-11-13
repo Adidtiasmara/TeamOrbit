@@ -5,9 +5,13 @@ export function Avatar({
   size = "md",
 }: {
   name: string;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }) {
-  const sizes = size === "sm" ? "size-6 text-[10px]" : "size-8 text-xs";
+  const sizes = {
+    sm: "size-6 text-[10px]",
+    md: "size-8 text-xs",
+    lg: "size-16 text-xl",
+  }[size];
 
   return (
     <span

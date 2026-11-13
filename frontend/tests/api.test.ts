@@ -145,4 +145,19 @@ describe("lib/api", () => {
       "Akses ditolak.",
     );
   });
+
+  it("errorMessage dengan field mendahulukan pesan field itu", () => {
+    const error = new ApiError(422, "Validasi gagal.", {
+      user_id: ["User sudah menjadi assignee tugas ini."],
+    });
+
+    expect(errorMessage(error, "user_id")).toBe(
+      "User sudah menjadi assignee tugas ini.",
+    );
+    expect(errorMessage(error, "role")).toBe("Validasi gagal.");
+    expect(errorMessage(error)).toBe("Validasi gagal.");
+    expect(errorMessage(new Error("x"), "user_id")).toBe(
+      "Terjadi kesalahan. Coba lagi.",
+    );
+  });
 });

@@ -19,6 +19,10 @@
   --todo-soft: #fef3c7;
   --danger: #dc2626;
   --danger-soft: #fee2e2;
+  /* Aksen panel Admin (pengelola). */
+  --admin: #4f46e5;
+  --admin-soft: #e0e7ff;
+  --admin-ink: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -40,6 +44,9 @@
     --todo-soft: #451a03;
     --danger: #f87171;
     --danger-soft: #450a0a;
+    --admin: #a5b4fc;
+    --admin-soft: #1e1b4b;
+    --admin-ink: #111827;
   }
 }
 
@@ -61,6 +68,9 @@
   --color-todo-soft: var(--todo-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-admin: var(--admin);
+  --color-admin-soft: var(--admin-soft);
+  --color-admin-ink: var(--admin-ink);
   --font-sans: var(--font-inter);
 }
 

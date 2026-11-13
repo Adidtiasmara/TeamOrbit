@@ -1,4 +1,4 @@
-import type { Tag, Task, User } from "../app/lib/types";
+import type { Tag, TagColor, Task, User } from "../app/lib/types";
 
 export const admin: User = {
   id: 1,
@@ -30,12 +30,15 @@ export function makeTask(overrides: Partial<Task> = {}): Task {
     created_by: { id: budi.id, name: budi.name },
     assignees: [],
     tags: [],
+    start_date: null,
+    due_date: null,
+    is_overdue: false,
     created_at: "2026-11-13T08:00:00.000000Z",
     updated_at: "2026-11-13T08:00:00.000000Z",
     ...overrides,
   };
 }
 
-export function makeTag(id: number, name: string): Tag {
-  return { id, name };
+export function makeTag(id: number, name: string, color: TagColor = "abu"): Tag {
+  return { id, name, color };
 }

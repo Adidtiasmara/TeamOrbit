@@ -130,4 +130,41 @@ class AuthTest extends TestCase
             ->getJson('/testing/admin-only')
             ->assertStatus(200);
     }
+
+    public function test_me_mengembalikan_json_persis_tanpa_field_lain(): void
+    {
+        $user = User::factory()->create(['name' => 'Rina', 'email' => 'rina@teamorbit.test']);
+
+        $this->actingAs($user, 'sanctum')
+            ->getJson('/api/me')
+            ->assertStatus(200)
+            ->assertExactJson(['data' => [
+                'id' => $user->id,
+                'name' => 'Rina',
+                'email' => 'rina@teamorbit.test',
+                'role' => 'member',
+            ]]);
+    }
+
+    public function test_register_dan_login_hanya_mengembalikan_user_dan_token(): void
+    {
+        $register = $this->postJson('/api/register', [
+            'name' => 'Rina',
+            'email' => 'rina@teamorbit.test',
+            'password' => 'rahasia123',
+            'password_confirmation' => 'rahasia123',
+        ])->assertStatus(201);
+
+        $login = $this->postJson('/api/login', [
+            'email' => 'rina@teamorbit.test',
+            'password' => 'rahasia123',
+        ])->assertStatus(200);
+
+        foreach ([$register, $login] as $response) {
+            $this->assertSame(['data'], array_keys($response->json()));
+            $this->assertSame(['user', 'token'], array_keys($response->json('data')));
+            $this->assertSame(['id', 'name', 'email', 'role'], array_keys($response->json('data.user')));
+            $this->assertIsString($response->json('data.token'));
+        }
+    }
 }

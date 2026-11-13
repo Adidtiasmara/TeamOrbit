@@ -12,8 +12,8 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Memasang/melepas tag pada tugas. Aturan aksesnya sama dengan mengelola
- * tugas: Admin semua tugas, Member hanya tugas milik/ditugaskan.
+ * Memasang/melepas tag pada tugas. Aturan aksesnya sama dengan mengedit
+ * tugas: Admin semua tugas, Member hanya tugas yang ia buat.
  */
 class TaskTagController extends Controller
 {

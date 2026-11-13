@@ -1,8 +1,13 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useId, useState, type FormEvent } from "react";
 import { addTaskTag, ApiError, createTag, errorMessage } from "../../lib/api";
-import type { Tag, Task } from "../../lib/types";
+import {
+  DEFAULT_TAG_COLOR,
+  TAG_COLOR_LABELS,
+  TAG_COLORS,
+} from "../../lib/format";
+import type { Tag, TagColor, Task } from "../../lib/types";
 import {
   sameTagName,
   TAG_NAME_MAX_LENGTH,
@@ -10,6 +15,61 @@ import {
 } from "../../lib/validation";
 import { Button } from "../ui/Button";
 import { inputClassName } from "../ui/Field";
+import { CheckIcon } from "../ui/Icons";
+import { TAG_SWATCH_CLASSES } from "../ui/TagChip";
+
+/**
+ * Pilihan warna dari palet berupa radio button: bisa dipakai dengan panah
+ * keyboard, tiap warna punya nama, dan yang terpilih diberi tanda centang.
+ */
+export function TagColorPicker({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: TagColor;
+  onChange: (color: TagColor) => void;
+  disabled?: boolean;
+}) {
+  const name = useId();
+
+  return (
+    <fieldset disabled={disabled} className="space-y-1.5">
+      <legend className="text-xs text-muted">
+        Warna tag baru: <span className="text-ink">{TAG_COLOR_LABELS[value]}</span>
+      </legend>
+      <div className="flex flex-wrap gap-2">
+        {TAG_COLORS.map((color) => {
+          const checked = color === value;
+
+          return (
+            <label
+              key={color}
+              title={TAG_COLOR_LABELS[color]}
+              className="cursor-pointer has-[:disabled]:cursor-not-allowed"
+            >
+              <input
+                type="radio"
+                name={name}
+                value={color}
+                checked={checked}
+                onChange={() => onChange(color)}
+                className="peer sr-only"
+              />
+              <span
+                aria-hidden
+                className={`flex size-7 items-center justify-center rounded-full text-white ring-offset-2 ring-offset-surface peer-checked:ring-2 peer-checked:ring-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent ${TAG_SWATCH_CLASSES[color]}`}
+              >
+                {checked && <CheckIcon size={16} />}
+              </span>
+              <span className="sr-only">{TAG_COLOR_LABELS[color]}</span>
+            </label>
+          );
+        })}
+      </div>
+    </fieldset>
+  );
+}
 
 interface TagFormProps {
   task: Task;
@@ -19,18 +79,13 @@ interface TagFormProps {
   onAttached: (task: Task) => void;
 }
 
-function apiErrorText(error: unknown, field: string): string {
-  return error instanceof ApiError
-    ? (error.fieldError(field) ?? error.message)
-    : errorMessage(error);
-}
-
 /**
  * Pasang tag yang sudah ada (klik chip), atau ketik nama untuk membuat tag
  * baru. Nama yang sudah ada (tanpa beda huruf besar/kecil) langsung dipasang.
  */
 export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) {
   const [name, setName] = useState("");
+  const [color, setColor] = useState<TagColor>(DEFAULT_TAG_COLOR);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -46,7 +101,7 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
       onAttached(await addTaskTag(task.id, tag.id));
       return true;
     } catch (caught) {
-      setError(apiErrorText(caught, "tag_id"));
+      setError(errorMessage(caught, "tag_id"));
       return false;
     } finally {
       setBusy(false);
@@ -83,9 +138,13 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
     let created: Tag;
 
     try {
-      created = await createTag(name.trim());
+      created = await createTag(name.trim(), color);
     } catch (caught) {
-      setError(apiErrorText(caught, "name"));
+      setError(
+        caught instanceof ApiError && !caught.fieldError("name")
+          ? errorMessage(caught, "color")
+          : errorMessage(caught, "name"),
+      );
       setBusy(false);
       return;
     }
@@ -94,6 +153,7 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
 
     if (await attach(created)) {
       setName("");
+      setColor(DEFAULT_TAG_COLOR);
     }
   };
 
@@ -110,9 +170,13 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
                 onClick={() => attach(tag)}
                 disabled={busy}
                 aria-label={`Pasang tag ${tag.name}`}
-                className="inline-flex max-w-full items-center gap-1 rounded-md border border-dashed border-line-strong px-2 py-1 text-xs font-medium text-muted hover:border-accent hover:text-ink disabled:opacity-50"
+                className="inline-flex max-w-full items-center gap-1.5 rounded-md border border-dashed border-line-strong px-2 py-1 text-xs font-medium text-muted hover:border-accent hover:text-ink disabled:opacity-50"
               >
                 <span aria-hidden>+</span>
+                <span
+                  aria-hidden
+                  className={`size-2 shrink-0 rounded-full ${TAG_SWATCH_CLASSES[tag.color]}`}
+                />
                 <span className="truncate">{tag.name}</span>
               </button>
             ))}
@@ -148,6 +212,7 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
             {error}
           </p>
         )}
+        <TagColorPicker value={color} onChange={setColor} disabled={busy} />
       </form>
     </div>
   );
