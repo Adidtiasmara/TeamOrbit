@@ -6,6 +6,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -22,6 +23,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => RoleMiddleware::class,
         ]);
+
+        // Cek role sebelum route model binding, supaya non-admin selalu
+        // mendapat 403 (bukan 404 yang membocorkan ada/tidaknya data).
+        $middleware->prependToPriorityList(
+            before: SubstituteBindings::class,
+            prepend: RoleMiddleware::class,
+        );
 
         // API tidak punya halaman login: tamu di /api/* jangan di-redirect
         // ke route('login') (tidak ada, berujung 500), cukup dijawab 401.

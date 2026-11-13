@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AssignableUserController;
 use App\Http\Controllers\Api\AssigneeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\TaskController;
+use App\Http\Controllers\Api\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -19,5 +20,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/assignable-users', AssignableUserController::class);
 
-    // Fase 6: /users (admin, role:admin), /tags
+    Route::middleware('role:admin')->group(function (): void {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::put('/users/{user}/role', [UserController::class, 'updateRole']);
+    });
+
+    // Fase 6: /tags
 });
