@@ -86,7 +86,7 @@ class AssigneeTest extends TestCase
         $this->assertDatabaseCount('task_user', 0);
     }
 
-    public function test_assignee_bisa_menambah_dan_menghapus_assignee_lain(): void
+    public function test_assignee_tidak_bisa_mengelola_assignee(): void
     {
         $assignee = User::factory()->create();
         $ani = User::factory()->create();
@@ -95,11 +95,11 @@ class AssigneeTest extends TestCase
 
         $this->actingAs($assignee, 'sanctum');
 
-        $this->postJson("/api/tasks/{$task->id}/assignees", ['user_id' => $ani->id])->assertStatus(201);
-        $this->assertDatabaseHas('task_user', ['task_id' => $task->id, 'user_id' => $ani->id]);
+        $this->postJson("/api/tasks/{$task->id}/assignees", ['user_id' => $ani->id])->assertStatus(403);
+        $this->deleteJson("/api/tasks/{$task->id}/assignees/{$assignee->id}")->assertStatus(403);
 
-        $this->deleteJson("/api/tasks/{$task->id}/assignees/{$ani->id}")->assertNoContent();
         $this->assertDatabaseMissing('task_user', ['task_id' => $task->id, 'user_id' => $ani->id]);
+        $this->assertDatabaseHas('task_user', ['task_id' => $task->id, 'user_id' => $assignee->id]);
     }
 
     public function test_member_tidak_bisa_mengelola_assignee_tugas_orang_lain(): void

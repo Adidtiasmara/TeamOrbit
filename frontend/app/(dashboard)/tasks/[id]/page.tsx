@@ -26,7 +26,7 @@ import {
   updateTask,
 } from "../../../lib/api";
 import { setFlash } from "../../../lib/flash";
-import { canManageTask } from "../../../lib/permissions";
+import { canManageTask, canUpdateStatus } from "../../../lib/permissions";
 import type { Tag, UserSummary } from "../../../lib/types";
 
 export default function TaskDetailPage() {
@@ -91,6 +91,7 @@ function TaskDetail({ taskId }: { taskId: string }) {
   const current = task.data;
   const done = current.status === "selesai";
   const canManage = canManageTask(user, current);
+  const canToggle = canUpdateStatus(user, current);
 
   const clearMessages = () => {
     setActionError(null);
@@ -138,29 +139,39 @@ function TaskDetail({ taskId }: { taskId: string }) {
           </h1>
           <StatusBadge status={current.status} />
         </div>
-        {canManage && (
+        {canToggle && (
           <div className="flex flex-wrap gap-2">
             <Button onClick={handleToggleStatus} loading={togglingStatus}>
               {done ? "Tandai belum selesai" : "Tandai selesai"}
             </Button>
-            <Button
-              onClick={() => {
-                clearMessages();
-                setEditOpen(true);
-              }}
-            >
-              Edit
-            </Button>
-            <Button
-              variant="danger"
-              onClick={() => {
-                clearMessages();
-                setDeleteOpen(true);
-              }}
-            >
-              Hapus
-            </Button>
+            {canManage && (
+              <>
+                <Button
+                  onClick={() => {
+                    clearMessages();
+                    setEditOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  onClick={() => {
+                    clearMessages();
+                    setDeleteOpen(true);
+                  }}
+                >
+                  Hapus
+                </Button>
+              </>
+            )}
           </div>
+        )}
+        {!canManage && (
+          <p className="text-xs text-muted">
+            Hanya pembuat tugas atau Admin yang bisa mengedit dan menghapus
+            tugas ini.
+          </p>
         )}
       </div>
 

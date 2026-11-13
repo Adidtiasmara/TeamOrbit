@@ -133,4 +133,13 @@ class Task extends Model
     {
         return static::query()->visibleTo($user)->whereKey($this->getKey())->exists();
     }
+
+    /**
+     * Hanya Admin dan pembuat tugas yang boleh mengedit, menghapus, dan
+     * mengelola assignee/tag. Assignee cukup melihat dan mengubah status.
+     */
+    public function isOwnedBy(User $user): bool
+    {
+        return $user->isAdmin() || (int) $this->created_by === $user->id;
+    }
 }
