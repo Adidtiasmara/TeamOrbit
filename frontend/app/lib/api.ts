@@ -2,6 +2,7 @@ import { clearToken, getToken } from "./auth";
 import type {
   AuthPayload,
   FieldErrors,
+  Role,
   Task,
   TaskStatus,
   User,
@@ -203,4 +204,18 @@ export function removeAssignee(
 
 export function listAssignableUsers(): Promise<UserSummary[]> {
   return requestData<UserSummary[]>("GET", "/assignable-users");
+}
+
+// Users (khusus Admin)
+
+export function listUsers(): Promise<User[]> {
+  return requestData<User[]>("GET", "/users");
+}
+
+export function updateUserRole(userId: number, role: Role): Promise<User> {
+  return requestData<User>(
+    "PUT",
+    `/users/${encodeURIComponent(String(userId))}/role`,
+    { role },
+  );
 }

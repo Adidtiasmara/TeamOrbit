@@ -12,7 +12,7 @@ import { RoleBadge } from "../ui/RoleBadge";
 
 const NAV_ITEMS = [
   { href: "/tasks", label: "Tugas", adminOnly: false },
-  { href: "/users", label: "Admin Users", adminOnly: true },
+  { href: "/users", label: "Kelola pengguna", adminOnly: true },
 ];
 
 export function AppShell({ children }: { children: ReactNode }) {
