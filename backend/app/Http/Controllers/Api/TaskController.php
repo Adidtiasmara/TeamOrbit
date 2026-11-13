@@ -33,7 +33,7 @@ class TaskController extends Controller
                 $filters['status'] ?? null,
                 fn (Builder $query, string $status) => $query->where('status', $status),
             )
-            ->with(['creator', 'assignees'])
+            ->with(Task::RESOURCE_RELATIONS)
             ->orderByDesc('created_at')
             ->orderByDesc('id')
             ->get();
@@ -53,7 +53,7 @@ class TaskController extends Controller
 
         $task = $request->user()->createdTasks()->create($data);
 
-        return (new TaskResource($task->load(['creator', 'assignees'])))
+        return (new TaskResource($task->load(Task::RESOURCE_RELATIONS)))
             ->response()
             ->setStatusCode(201);
     }
@@ -62,7 +62,7 @@ class TaskController extends Controller
     {
         Gate::authorize('view', $task);
 
-        return new TaskResource($task->load(['creator', 'assignees']));
+        return new TaskResource($task->load(Task::RESOURCE_RELATIONS));
     }
 
     /**
@@ -81,7 +81,7 @@ class TaskController extends Controller
 
         $task->update($data);
 
-        return new TaskResource($task->load(['creator', 'assignees']));
+        return new TaskResource($task->load(Task::RESOURCE_RELATIONS));
     }
 
     public function destroy(Task $task): Response

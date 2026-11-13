@@ -30,4 +30,9 @@ class TaskPolicy
     {
         return $task->isAccessibleBy($user);
     }
+
+    public function manageTags(User $user, Task $task): bool
+    {
+        return $task->isAccessibleBy($user);
+    }
 }

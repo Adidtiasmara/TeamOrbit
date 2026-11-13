@@ -18,6 +18,21 @@ export function validateTitle(title: string): string | null {
   return length === 0 || length > TITLE_MAX_LENGTH ? TITLE_ERROR : null;
 }
 
+export const TAG_NAME_MAX_LENGTH = 50;
+
+export const TAG_NAME_ERROR = "Nama tag wajib diisi, maksimal 50 karakter.";
+
+export function validateTagName(name: string): string | null {
+  const length = Array.from(name.trim()).length;
+
+  return length === 0 || length > TAG_NAME_MAX_LENGTH ? TAG_NAME_ERROR : null;
+}
+
+/** Sama dengan aturan unik backend: tidak membedakan huruf besar/kecil. */
+export function sameTagName(a: string, b: string): boolean {
+  return a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
+}
+
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }

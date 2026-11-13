@@ -35,7 +35,7 @@ class AssigneeController extends Controller
 
         $task->assignees()->attach($data['user_id']);
 
-        return (new TaskResource($task->load(['creator', 'assignees'])))
+        return (new TaskResource($task->load(Task::RESOURCE_RELATIONS)))
             ->response()
             ->setStatusCode(201);
     }

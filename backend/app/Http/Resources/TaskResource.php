@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -31,6 +32,10 @@ class TaskResource extends JsonResource
             ] : null,
             'assignees' => $this->assignees
                 ->map(fn (User $user) => ['id' => $user->id, 'name' => $user->name])
+                ->values()
+                ->all(),
+            'tags' => $this->tags
+                ->map(fn (Tag $tag) => ['id' => $tag->id, 'name' => $tag->name])
                 ->values()
                 ->all(),
             'created_at' => $this->created_at,

@@ -21,6 +21,11 @@ class Task extends Model
     public const STATUSES = [self::STATUS_PENDING, self::STATUS_DONE];
 
     /**
+     * Relasi yang selalu dimuat sebelum tugas dikirim lewat TaskResource.
+     */
+    public const RESOURCE_RELATIONS = ['creator', 'assignees', 'tags'];
+
+    /**
      * created_by sengaja tidak fillable; diisi dari user yang login.
      *
      * @var list<string>
@@ -55,6 +60,15 @@ class Task extends Model
     public function assignees(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'task_user');
+    }
+
+    /**
+     * @return BelongsToMany<Tag, $this>
+     */
+    public function tags(): BelongsToMany
+    {
+        // LOWER(): urutan sama di SQLite dan MySQL (tidak membedakan huruf besar).
+        return $this->belongsToMany(Tag::class, 'task_tag')->orderByRaw('LOWER(tags.name)');
     }
 
     /**
