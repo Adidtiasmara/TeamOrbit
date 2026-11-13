@@ -15,9 +15,21 @@ export interface UserSummary {
   name: string;
 }
 
+/** Palet warna tag; sama dengan Tag::COLORS di backend. */
+export type TagColor =
+  | "abu"
+  | "merah"
+  | "oranye"
+  | "kuning"
+  | "hijau"
+  | "biru"
+  | "ungu"
+  | "merah_muda";
+
 export interface Tag {
   id: number;
   name: string;
+  color: TagColor;
 }
 
 export interface Task {

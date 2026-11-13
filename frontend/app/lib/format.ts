@@ -1,4 +1,20 @@
-import type { Role, TaskStatus } from "./types";
+import type { Role, TagColor, TaskStatus } from "./types";
+
+/** Urutan di sini juga urutan pilihan warna di form. */
+export const TAG_COLOR_LABELS: Record<TagColor, string> = {
+  abu: "Abu-abu",
+  merah: "Merah",
+  oranye: "Oranye",
+  kuning: "Kuning",
+  hijau: "Hijau",
+  biru: "Biru",
+  ungu: "Ungu",
+  merah_muda: "Merah muda",
+};
+
+export const TAG_COLORS = Object.keys(TAG_COLOR_LABELS) as TagColor[];
+
+export const DEFAULT_TAG_COLOR: TagColor = "abu";
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   belum_selesai: "Belum selesai",

@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Models\Tag;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreTagRequest extends FormRequest
 {
@@ -43,6 +44,8 @@ class StoreTagRequest extends FormRequest
                     }
                 },
             ],
+            // Opsional; kalau tidak dikirim, model memakai Tag::DEFAULT_COLOR.
+            'color' => ['sometimes', Rule::in(Tag::COLORS)],
         ];
     }
 
@@ -55,6 +58,7 @@ class StoreTagRequest extends FormRequest
             'name.required' => self::NAME_MESSAGE,
             'name.string' => self::NAME_MESSAGE,
             'name.max' => self::NAME_MESSAGE,
+            'color.in' => 'Warna tag tidak valid.',
         ];
     }
 }

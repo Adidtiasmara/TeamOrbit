@@ -196,6 +196,7 @@ export function TaskTagsPanel({
             <li key={tag.id} className="max-w-full">
               <TagChip
                 name={tag.name}
+                color={tag.color}
                 onRemove={canManage ? () => handleRemove(tag) : undefined}
                 removing={removingId !== null}
               />

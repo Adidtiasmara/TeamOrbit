@@ -191,7 +191,7 @@ function TaskRow({ task }: { task: Task }) {
       {task.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {task.tags.map((tag) => (
-            <TagChip key={tag.id} name={tag.name} size="sm" />
+            <TagChip key={tag.id} name={tag.name} color={tag.color} size="sm" />
           ))}
         </div>
       )}
