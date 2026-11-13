@@ -14,7 +14,9 @@ COPY . .
 ARG NEXT_PUBLIC_API_URL=http://localhost:8000/api
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
-RUN npm run build
+# Git tidak menyimpan folder kosong; pastikan public/ ada supaya tahap
+# berikutnya bisa menyalinnya walaupun belum ada aset statis.
+RUN mkdir -p public && npm run build
 
 # Tahap jalan: hanya hasil build dan dependency yang dibutuhkan `next start`.
 FROM node:24-alpine

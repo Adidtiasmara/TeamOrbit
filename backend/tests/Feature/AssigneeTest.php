@@ -174,4 +174,20 @@ class AssigneeTest extends TestCase
                 ['id' => $budi->id, 'name' => 'Budi'],
             ]]);
     }
+
+    public function test_hak_akses_dicek_sebelum_validasi_body(): void
+    {
+        $member = User::factory()->create();
+        $task = Task::factory()->create();
+
+        $this->actingAs($member, 'sanctum');
+
+        $this->postJson("/api/tasks/{$task->id}/assignees", [])
+            ->assertStatus(403)
+            ->assertJsonPath('message', 'Akses ditolak.');
+        $this->postJson("/api/tasks/{$task->id}/assignees", ['user_id' => 99999])
+            ->assertStatus(403);
+
+        $this->assertDatabaseCount('task_user', 0);
+    }
 }

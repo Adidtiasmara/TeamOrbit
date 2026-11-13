@@ -11,6 +11,7 @@ import { Modal } from "../../components/ui/Modal";
 import { Spinner, StateMessage } from "../../components/ui/StateMessage";
 import { StatusBadge } from "../../components/ui/StatusBadge";
 import { TagChip } from "../../components/ui/TagChip";
+import { useApiData } from "../../hooks/useApiData";
 import { useAuth } from "../../hooks/useAuth";
 import { errorMessage, listTasks } from "../../lib/api";
 import { takeFlash } from "../../lib/flash";
@@ -34,9 +35,9 @@ const EMPTY_MESSAGES: Record<Filter, string> = {
 export default function TasksPage() {
   const { user } = useAuth();
   const [filter, setFilter] = useState<Filter>("semua");
-  const [reloadKey, setReloadKey] = useState(0);
-  const [tasks, setTasks] = useState<Task[] | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const tasks = useApiData(`tasks:${filter}`, () =>
+    listTasks(filter === "semua" ? undefined : filter),
+  );
   const [formOpen, setFormOpen] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -49,38 +50,10 @@ export default function TasksPage() {
     }
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    listTasks(filter === "semua" ? undefined : filter)
-      .then((result) => {
-        if (!cancelled) {
-          setTasks(result);
-        }
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) {
-          setLoadError(errorMessage(error));
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [filter, reloadKey]);
-
-  // Reset ke status loading di event handler, bukan di effect.
-  const reload = (nextFilter: Filter = filter) => {
-    setTasks(null);
-    setLoadError(null);
-    setFilter(nextFilter);
-    setReloadKey((value) => value + 1);
-  };
-
   const handleCreated = (task: Task) => {
     setFormOpen(false);
     setNotice(`Tugas "${task.title}" dibuat.`);
-    reload();
+    tasks.reload();
   };
 
   return (
@@ -114,11 +87,7 @@ export default function TasksPage() {
               key={option.value}
               type="button"
               aria-pressed={active}
-              onClick={() => {
-                if (!active) {
-                  reload(option.value);
-                }
-              }}
+              onClick={() => setFilter(option.value)}
               className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
                 active
                   ? "border-primary bg-primary text-primary-ink"
@@ -147,17 +116,17 @@ export default function TasksPage() {
 
       {notice && <Alert tone="success">{notice}</Alert>}
 
-      {loadError ? (
-        <StateMessage title={loadError}>
-          <Button onClick={() => reload()}>Coba lagi</Button>
+      {tasks.status === "error" ? (
+        <StateMessage title={errorMessage(tasks.error)}>
+          <Button onClick={tasks.reload}>Coba lagi</Button>
         </StateMessage>
-      ) : tasks === null ? (
+      ) : tasks.status === "loading" ? (
         <Spinner label="Memuat tugas..." />
-      ) : tasks.length === 0 ? (
+      ) : tasks.data.length === 0 ? (
         <StateMessage title={EMPTY_MESSAGES[filter]} />
       ) : (
         <ul className="space-y-3">
-          {tasks.map((task) => (
+          {tasks.data.map((task) => (
             <li key={task.id}>
               <TaskRow task={task} />
             </li>

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Tag;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -329,5 +330,38 @@ class TaskTest extends TestCase
             ->getJson("/api/tasks/{$task->id}")
             ->assertStatus(200)
             ->assertJsonPath('data.created_by', null);
+    }
+
+    public function test_objek_tugas_hanya_berisi_field_api_spec(): void
+    {
+        $member = User::factory()->create();
+        $ani = User::factory()->create();
+        $task = Task::factory()->create(['created_by' => $member->id]);
+        $task->assignees()->attach($ani);
+        $task->tags()->attach(Tag::factory()->create());
+
+        $this->actingAs($member, 'sanctum');
+
+        $responses = [
+            'index' => [$this->getJson('/api/tasks')->assertStatus(200), 'data.0'],
+            'show' => [$this->getJson("/api/tasks/{$task->id}")->assertStatus(200), 'data'],
+            'store' => [$this->postJson('/api/tasks', ['title' => 'Baru'])->assertStatus(201), 'data'],
+        ];
+
+        foreach ($responses as $name => [$response, $path]) {
+            $this->assertSame(['data'], array_keys($response->json()), $name);
+            $this->assertSame(
+                ['id', 'title', 'description', 'status', 'created_by', 'assignees', 'tags', 'created_at', 'updated_at'],
+                array_keys($response->json($path)),
+                $name,
+            );
+            $this->assertSame(['id', 'name'], array_keys($response->json("{$path}.created_by")), $name);
+        }
+
+        $show = $responses['show'][0];
+        $this->assertSame(['id', 'name'], array_keys($show->json('data.assignees.0')));
+        $this->assertSame(['id', 'name'], array_keys($show->json('data.tags.0')));
+        $this->assertSame([], $responses['store'][0]->json('data.assignees'));
+        $this->assertSame([], $responses['store'][0]->json('data.tags'));
     }
 }

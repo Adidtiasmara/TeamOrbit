@@ -140,4 +140,19 @@ class UserTest extends TestCase
             ->getJson('/api/users')
             ->assertStatus(200);
     }
+
+    public function test_role_tidak_valid_untuk_diri_sendiri_hanya_memberi_satu_pesan(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin, 'sanctum')
+            ->putJson("/api/users/{$admin->id}/role", ['role' => 'superadmin'])
+            ->assertStatus(422)
+            ->assertExactJson([
+                'message' => 'Validasi gagal.',
+                'errors' => ['role' => ['Role harus admin atau member.']],
+            ]);
+
+        $this->assertDatabaseHas('users', ['id' => $admin->id, 'role' => 'admin']);
+    }
 }
