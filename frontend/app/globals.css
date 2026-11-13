@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+/* Palet diambil dari design/style.css (mockup). */
+:root {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-2: #f4f6f8;
+  --ink: #111827;
+  --muted: #6b7280;
+  --line: #e5e7eb;
+  --line-strong: #d1d5db;
+  --accent: #10b981;
+  --accent-soft: #d1fae5;
+  --primary: #111827;
+  --primary-ink: #ffffff;
+  --done: #065f46;
+  --done-soft: #d1fae5;
+  --todo: #92400e;
+  --todo-soft: #fef3c7;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0b0f14;
+    --surface: #151a21;
+    --surface-2: #1a2028;
+    --ink: #f9fafb;
+    --muted: #9ca3af;
+    --line: #2a313c;
+    --line-strong: #374151;
+    --accent: #34d399;
+    --accent-soft: #064e3b;
+    --primary: #f9fafb;
+    --primary-ink: #111827;
+    --done: #6ee7b7;
+    --done-soft: #064e3b;
+    --todo: #fcd34d;
+    --todo-soft: #451a03;
+    --danger: #f87171;
+    --danger-soft: #450a0a;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-done: var(--done);
+  --color-done-soft: var(--done-soft);
+  --color-todo: var(--todo);
+  --color-todo-soft: var(--todo-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
