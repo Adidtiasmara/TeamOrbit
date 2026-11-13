@@ -138,19 +138,22 @@ class TagTest extends TestCase
         $this->assertDatabaseCount('task_tag', 1);
     }
 
-    public function test_assignee_bisa_memasang_dan_melepas_tag(): void
+    public function test_assignee_tidak_bisa_memasang_atau_melepas_tag(): void
     {
         $assignee = User::factory()->create();
         $task = Task::factory()->create();
         $task->assignees()->attach($assignee);
-        $tag = Tag::factory()->create();
+        $attached = Tag::factory()->create();
+        $other = Tag::factory()->create();
+        $task->tags()->attach($attached);
 
         $this->actingAs($assignee, 'sanctum');
 
-        $this->postJson("/api/tasks/{$task->id}/tags/{$tag->id}")->assertStatus(201);
-        $this->deleteJson("/api/tasks/{$task->id}/tags/{$tag->id}")->assertNoContent();
+        $this->postJson("/api/tasks/{$task->id}/tags/{$other->id}")->assertStatus(403);
+        $this->deleteJson("/api/tasks/{$task->id}/tags/{$attached->id}")->assertStatus(403);
 
-        $this->assertDatabaseCount('task_tag', 0);
+        $this->assertDatabaseHas('task_tag', ['task_id' => $task->id, 'tag_id' => $attached->id]);
+        $this->assertDatabaseCount('task_tag', 1);
     }
 
     public function test_member_tidak_bisa_mengelola_tag_tugas_orang_lain(): void

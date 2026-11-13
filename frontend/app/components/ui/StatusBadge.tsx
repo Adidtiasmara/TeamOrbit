@@ -13,3 +13,12 @@ export function StatusBadge({ status }: { status: TaskStatus }) {
     </span>
   );
 }
+
+/** Penanda tugas belum selesai yang sudah melewati deadline. */
+export function OverdueBadge() {
+  return (
+    <span className="inline-flex shrink-0 items-center rounded-full bg-danger-soft px-2.5 py-0.5 text-xs font-medium text-danger">
+      Terlambat
+    </span>
+  );
+}

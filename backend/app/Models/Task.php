@@ -34,7 +34,46 @@ class Task extends Model
         'title',
         'description',
         'status',
+        'start_date',
+        'due_date',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'start_date' => 'date',
+            'due_date' => 'date',
+        ];
+    }
+
+    /**
+     * Tanggal hari ini menurut zona waktu tim (bukan UTC), dipakai untuk
+     * menentukan tugas yang terlambat.
+     */
+    public static function today(): string
+    {
+        return now(config('app.task_timezone'))->toDateString();
+    }
+
+    public function isOverdue(): bool
+    {
+        return $this->status !== self::STATUS_DONE
+            && $this->due_date !== null
+            && $this->due_date->toDateString() < self::today();
+    }
+
+    /**
+     * @param  Builder<Task>  $query
+     */
+    public function scopeOverdue(Builder $query): void
+    {
+        $query->where('status', '!=', self::STATUS_DONE)
+            ->whereNotNull('due_date')
+            ->whereDate('due_date', '<', self::today());
+    }
 
     /**
      * Sama dengan default kolom di DB, supaya model yang baru dibuat
@@ -93,5 +132,14 @@ class Task extends Model
     public function isAccessibleBy(User $user): bool
     {
         return static::query()->visibleTo($user)->whereKey($this->getKey())->exists();
+    }
+
+    /**
+     * Hanya Admin dan pembuat tugas yang boleh mengedit, menghapus, dan
+     * mengelola assignee/tag. Assignee cukup melihat dan mengubah status.
+     */
+    public function isOwnedBy(User $user): bool
+    {
+        return $user->isAdmin() || (int) $this->created_by === $user->id;
     }
 }

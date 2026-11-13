@@ -9,11 +9,14 @@ class UpdateTaskRequest extends TaskRequest
 {
     /**
      * Dicek sebelum validasi, jadi user tanpa hak selalu mendapat 403
-     * walaupun body yang dikirim tidak valid.
+     * walaupun body yang dikirim tidak valid. Assignee hanya boleh
+     * mengirim status; field lain butuh hak edit penuh.
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', $this->route('task'));
+        $ability = array_diff($this->keys(), ['status']) === [] ? 'updateStatus' : 'update';
+
+        return $this->user()->can($ability, $this->route('task'));
     }
 
     /**
@@ -28,6 +31,12 @@ class UpdateTaskRequest extends TaskRequest
             'title' => ['sometimes', 'required', 'string', 'max:100'],
             'description' => ['sometimes', 'nullable', 'string'],
             'status' => ['sometimes', 'required', Rule::in(Task::STATUSES)],
+            ...$this->dateRules(),
         ];
+    }
+
+    protected function existingTask(): ?Task
+    {
+        return $this->route('task');
     }
 }

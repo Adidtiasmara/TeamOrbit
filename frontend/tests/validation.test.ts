@@ -1,13 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
+  DUE_BEFORE_START_ERROR,
   isValidEmail,
   sameTagName,
   TAG_NAME_ERROR,
   TITLE_ERROR,
   titleLength,
+  validateDates,
   validateTagName,
   validateTitle,
 } from "../app/lib/validation";
+
+describe("validateDates", () => {
+  it("menerima tanggal kosong, sama, atau deadline setelah mulai", () => {
+    expect(validateDates("", "")).toBeNull();
+    expect(validateDates("2026-11-20", "")).toBeNull();
+    expect(validateDates("", "2026-11-20")).toBeNull();
+    expect(validateDates("2026-11-20", "2026-11-20")).toBeNull();
+    expect(validateDates("2026-11-20", "2026-12-01")).toBeNull();
+  });
+
+  it("menolak deadline sebelum tanggal mulai", () => {
+    expect(validateDates("2026-11-20", "2026-11-19")).toBe(
+      DUE_BEFORE_START_ERROR,
+    );
+  });
+});
 
 describe("validateTitle", () => {
   it("menolak judul kosong atau hanya spasi", () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canManageTask, isAdmin } from "../app/lib/permissions";
+import { canManageTask, canUpdateStatus, isAdmin } from "../app/lib/permissions";
 import { admin, ani, budi, makeTask } from "./fixtures";
 
 describe("isAdmin", () => {
@@ -24,18 +24,21 @@ describe("canManageTask (sama dengan TaskPolicy backend)", () => {
     expect(canManageTask(budi, task)).toBe(true);
   });
 
-  it("assignee boleh mengelola", () => {
+  it("assignee tidak boleh mengedit/menghapus, tetapi boleh mengubah status", () => {
     const assigned = makeTask({ assignees: [{ id: ani.id, name: ani.name }] });
 
-    expect(canManageTask(ani, assigned)).toBe(true);
+    expect(canManageTask(ani, assigned)).toBe(false);
+    expect(canUpdateStatus(ani, assigned)).toBe(true);
   });
 
   it("Member lain tidak boleh, begitu juga tamu", () => {
     expect(canManageTask(ani, task)).toBe(false);
     expect(canManageTask(null, task)).toBe(false);
+    expect(canUpdateStatus(ani, task)).toBe(false);
+    expect(canUpdateStatus(null, task)).toBe(false);
   });
 
-  it("tugas tanpa pembuat (akun dihapus) hanya bisa dikelola Admin/assignee", () => {
+  it("tugas tanpa pembuat (akun dihapus) hanya bisa dikelola Admin", () => {
     const orphan = makeTask({ created_by: null });
 
     expect(canManageTask(budi, orphan)).toBe(false);

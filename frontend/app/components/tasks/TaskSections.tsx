@@ -9,8 +9,8 @@ import {
   removeAssignee,
   removeTaskTag,
 } from "../../lib/api";
-import { formatDateTime } from "../../lib/format";
-import type { Tag, Task, UserSummary } from "../../lib/types";
+import { formatDate, formatDateTime } from "../../lib/format";
+import type { Tag, Task, TaskSummary, UserSummary } from "../../lib/types";
 import { AssigneeForm } from "../forms/AssigneeForm";
 import { TagForm } from "../forms/TagForm";
 import { Alert } from "../ui/Alert";
@@ -31,11 +31,83 @@ interface PanelProps {
   onError: (message: string) => void;
 }
 
+/** Ringkasan tanggal satu baris, mis. "20 Nov 2026 – 25 Nov 2026". */
+export function TaskDates({ task }: { task: Task }) {
+  if (!task.start_date && !task.due_date) {
+    return null;
+  }
+
+  return (
+    <span className={task.is_overdue ? "font-medium text-danger" : undefined}>
+      {task.start_date && <>Mulai {formatDate(task.start_date)}</>}
+      {task.start_date && task.due_date && " · "}
+      {task.due_date && <>Deadline {formatDate(task.due_date)}</>}
+    </span>
+  );
+}
+
+const STATS: { key: keyof TaskSummary; label: string; tone: string }[] = [
+  { key: "total", label: "Total tugas", tone: "text-ink" },
+  { key: "done", label: "Selesai", tone: "text-done" },
+  { key: "pending", label: "Belum selesai", tone: "text-todo" },
+  { key: "overdue", label: "Terlambat", tone: "text-danger" },
+];
+
+/** Kartu statistik tugas; dipakai Admin (seluruh tim) dan Member (miliknya). */
+export function TaskStats({ summary }: { summary: TaskSummary }) {
+  return (
+    <section aria-label="Statistik tugas" className="space-y-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {STATS.map((stat) => (
+          <div key={stat.key} className={CARD}>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted">
+              {stat.label}
+            </p>
+            <p className={`mt-1 text-2xl font-bold ${stat.tone}`}>
+              {summary[stat.key]}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className={CARD}>
+        <div className="flex items-center justify-between gap-3 text-sm">
+          <span className="text-ink">
+            {summary.done} dari {summary.total} tugas selesai
+          </span>
+          <span className="font-semibold text-ink">{summary.percent_done}%</span>
+        </div>
+        <div
+          role="progressbar"
+          aria-label="Persentase tugas selesai"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={summary.percent_done}
+          className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2"
+        >
+          <div
+            className="h-full rounded-full bg-accent transition-[width]"
+            style={{ width: `${summary.percent_done}%` }}
+          />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export function TaskInfo({ task }: { task: Task }) {
   return (
     <>
       <section className={CARD}>
         <dl className="grid gap-3 text-sm sm:grid-cols-[10rem_1fr]">
+          <dt className="text-muted">Tanggal mulai</dt>
+          <dd className="text-ink">
+            {task.start_date ? formatDate(task.start_date) : "-"}
+          </dd>
+          <dt className="text-muted">Deadline</dt>
+          <dd className={task.is_overdue ? "font-medium text-danger" : "text-ink"}>
+            {task.due_date ? formatDate(task.due_date) : "-"}
+            {task.is_overdue && " (terlambat)"}
+          </dd>
           <dt className="text-muted">Dibuat oleh</dt>
           <dd className="text-ink">
             {task.created_by?.name ?? "Akun pembuat sudah dihapus"}

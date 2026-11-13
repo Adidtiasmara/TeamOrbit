@@ -33,6 +33,14 @@ export function sameTagName(a: string, b: string): boolean {
   return a.trim().toLocaleLowerCase() === b.trim().toLocaleLowerCase();
 }
 
+export const DUE_BEFORE_START_ERROR =
+  "Deadline tidak boleh sebelum tanggal mulai.";
+
+/** Sama dengan aturan backend; tanggal berformat YYYY-MM-DD bisa dibandingkan sebagai teks. */
+export function validateDates(start: string, due: string): string | null {
+  return start && due && due < start ? DUE_BEFORE_START_ERROR : null;
+}
+
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }

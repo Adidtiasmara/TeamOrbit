@@ -19,6 +19,15 @@ export function formatDateTime(iso: string): string {
   return dateTimeFormatter.format(new Date(iso));
 }
 
+const dateFormatter = new Intl.DateTimeFormat("id-ID", { dateStyle: "medium" });
+
+/** "2026-11-20" menjadi "20 Nov 2026"; dibaca sebagai tanggal lokal, bukan UTC. */
+export function formatDate(date: string): string {
+  const [year, month, day] = date.split("-").map(Number);
+
+  return dateFormatter.format(new Date(year, month - 1, day));
+}
+
 export function initials(name: string): string {
   const letters = name
     .trim()

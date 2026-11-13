@@ -151,6 +151,9 @@ Response 200:
       "created_by": { "id": 1, "name": "..." },
       "assignees": [ { "id": 2, "name": "..." } ],
       "tags": [ { "id": 1, "name": "urgent" } ],
+      "start_date": "2026-11-20",
+      "due_date": "2026-11-25",
+      "is_overdue": false,
       "created_at": "...",
       "updated_at": "..."
     }
@@ -158,10 +161,36 @@ Response 200:
 }
 ```
 
+`start_date` dan `due_date` berformat `YYYY-MM-DD` atau `null`. `is_overdue` bernilai `true` jika tugas belum selesai dan `due_date` sudah lewat menurut zona waktu tim (`TASK_TIMEZONE`, default `Asia/Jakarta`). Tugas yang deadline-nya hari ini belum dihitung terlambat.
+
 Akses:
 
 - Admin: semua tugas.
 - Member: hanya tugas yang ia buat atau ditugaskan.
+
+### Task Summary
+
+```
+GET /tasks/summary
+```
+
+Statistik tugas yang berhak dilihat user (aturan akses sama dengan List Tasks). Tidak menerima filter.
+
+Response 200:
+
+```json
+{
+  "data": {
+    "total": 7,
+    "done": 1,
+    "pending": 6,
+    "overdue": 1,
+    "percent_done": 14
+  }
+}
+```
+
+`percent_done` dibulatkan ke bilangan bulat; `0` jika belum ada tugas.
 
 ### Create Task
 
@@ -175,9 +204,13 @@ Body:
 {
   "title": "string, required, max 100 karakter",
   "description": "string, nullable",
-  "status": "belum_selesai|selesai, default belum_selesai"
+  "status": "belum_selesai|selesai, default belum_selesai",
+  "start_date": "YYYY-MM-DD, nullable",
+  "due_date": "YYYY-MM-DD, nullable, tidak boleh sebelum start_date"
 }
 ```
+
+Jika `due_date` sebelum `start_date`, respons `422` dengan `errors.due_date` berisi `"Deadline tidak boleh sebelum tanggal mulai."`. Format tanggal yang salah ditolak `422`.
 
 Spasi di awal/akhir `title` dipangkas sebelum validasi, jadi batas 100 karakter berlaku setelah trim. Pembuat tugas tidak otomatis menjadi assignee (`assignees` kosong).
 
@@ -209,7 +242,9 @@ Response 200:
 PUT /tasks/{id}
 ```
 
-Body: field sama dengan create, tetapi semuanya opsional (update parsial). Hanya field yang dikirim yang divalidasi dan diubah; `title` yang dikirim tetap wajib terisi dan maksimal 100 karakter. Contoh toggle status:
+Akses: Admin dan pembuat tugas boleh mengubah semua field. Assignee hanya boleh mengirim `status`; body berisi field lain dari assignee ditolak `403`. Hapus tugas, kelola assignee, dan pasang/lepas tag juga hanya untuk Admin dan pembuat.
+
+Body: field sama dengan create, tetapi semuanya opsional (update parsial). Hanya field yang dikirim yang divalidasi dan diubah; `title` yang dikirim tetap wajib terisi dan maksimal 100 karakter. Urutan tanggal dicek terhadap nilai yang tersimpan bila hanya salah satu tanggal dikirim; kirim `null` untuk mengosongkan tanggal. Contoh toggle status:
 
 ```json
 {

@@ -27,6 +27,7 @@ class StoreTaskRequest extends TaskRequest
             'title' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'status' => ['sometimes', 'required', Rule::in(Task::STATUSES)],
+            ...$this->dateRules(),
         ];
     }
 }
