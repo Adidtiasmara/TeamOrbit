@@ -1,9 +1,5 @@
+import { ROLE_LABELS } from "../../lib/format";
 import type { Role } from "../../lib/types";
-
-const LABELS: Record<Role, string> = {
-  admin: "Admin",
-  member: "Member",
-};
 
 export function RoleBadge({ role }: { role: Role }) {
   const tone =
@@ -15,7 +11,7 @@ export function RoleBadge({ role }: { role: Role }) {
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${tone}`}
     >
-      {LABELS[role]}
+      {ROLE_LABELS[role]}
     </span>
   );
 }

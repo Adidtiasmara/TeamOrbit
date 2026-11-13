@@ -3,56 +3,34 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
+use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', Password::min(8), 'confirmed'],
-        ], [
-            'name.required' => 'Nama wajib diisi.',
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'email.unique' => 'Email sudah terdaftar.',
-            'password.required' => 'Password wajib diisi.',
-            'password.min' => 'Password minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-        ]);
+        $data = $request->validated();
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => $data['password'],
-            'role' => 'member',
+            'role' => User::ROLE_MEMBER,
         ]);
 
-        return response()->json([
-            'data' => [
-                'user' => $this->formatUser($user),
-                'token' => $user->createToken('auth')->plainTextToken,
-            ],
-        ], 201);
+        return response()->json(['data' => $this->authPayload($user)], 201);
     }
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $credentials = $request->validate([
-            'email' => ['required', 'string', 'email'],
-            'password' => ['required', 'string'],
-        ], [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'password.required' => 'Password wajib diisi.',
-        ]);
+        $credentials = $request->validated();
 
         $user = User::where('email', $credentials['email'])->first();
 
@@ -62,12 +40,7 @@ class AuthController extends Controller
             ], 401);
         }
 
-        return response()->json([
-            'data' => [
-                'user' => $this->formatUser($user),
-                'token' => $user->createToken('auth')->plainTextToken,
-            ],
-        ]);
+        return response()->json(['data' => $this->authPayload($user)]);
     }
 
     public function logout(Request $request): Response
@@ -77,20 +50,21 @@ class AuthController extends Controller
         return response()->noContent();
     }
 
-    public function me(Request $request): JsonResponse
+    public function me(Request $request): UserResource
     {
-        return response()->json([
-            'data' => $this->formatUser($request->user()),
-        ]);
+        return new UserResource($request->user());
     }
 
-    private function formatUser(User $user): array
+    /**
+     * Isi `data` untuk register dan login: user beserta token baru.
+     *
+     * @return array{user: UserResource, token: string}
+     */
+    private function authPayload(User $user): array
     {
         return [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
+            'user' => new UserResource($user),
+            'token' => $user->createToken('auth')->plainTextToken,
         ];
     }
 }

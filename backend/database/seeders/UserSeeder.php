@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Hash;
 class UserSeeder extends Seeder
 {
     private const ACCOUNTS = [
-        ['name' => 'Admin TeamOrbit', 'email' => 'admin@teamorbit.test', 'role' => 'admin'],
-        ['name' => 'Budi Member', 'email' => 'budi@teamorbit.test', 'role' => 'member'],
-        ['name' => 'Ani Member', 'email' => 'ani@teamorbit.test', 'role' => 'member'],
-        ['name' => 'Citra Member', 'email' => 'citra@teamorbit.test', 'role' => 'member'],
+        ['name' => 'Admin TeamOrbit', 'email' => 'admin@teamorbit.test', 'role' => User::ROLE_ADMIN],
+        ['name' => 'Budi Member', 'email' => 'budi@teamorbit.test', 'role' => User::ROLE_MEMBER],
+        ['name' => 'Ani Member', 'email' => 'ani@teamorbit.test', 'role' => User::ROLE_MEMBER],
+        ['name' => 'Citra Member', 'email' => 'citra@teamorbit.test', 'role' => User::ROLE_MEMBER],
     ];
 
     public function run(): void

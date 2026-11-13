@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { addTaskTag, ApiError, createTag, errorMessage } from "../../lib/api";
+import { addTaskTag, createTag, errorMessage } from "../../lib/api";
 import type { Tag, Task } from "../../lib/types";
 import {
   sameTagName,
@@ -17,12 +17,6 @@ interface TagFormProps {
   tags: Tag[];
   onTagCreated: (tag: Tag) => void;
   onAttached: (task: Task) => void;
-}
-
-function apiErrorText(error: unknown, field: string): string {
-  return error instanceof ApiError
-    ? (error.fieldError(field) ?? error.message)
-    : errorMessage(error);
 }
 
 /**
@@ -46,7 +40,7 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
       onAttached(await addTaskTag(task.id, tag.id));
       return true;
     } catch (caught) {
-      setError(apiErrorText(caught, "tag_id"));
+      setError(errorMessage(caught, "tag_id"));
       return false;
     } finally {
       setBusy(false);
@@ -85,7 +79,7 @@ export function TagForm({ task, tags, onTagCreated, onAttached }: TagFormProps) 
     try {
       created = await createTag(name.trim());
     } catch (caught) {
-      setError(apiErrorText(caught, "name"));
+      setError(errorMessage(caught, "name"));
       setBusy(false);
       return;
     }

@@ -37,8 +37,16 @@ export class ApiError extends Error {
   }
 }
 
-export function errorMessage(error: unknown): string {
-  return error instanceof ApiError ? error.message : GENERIC_ERROR;
+/**
+ * Pesan untuk ditampilkan ke user. Kalau `field` diisi, pesan error field
+ * itu didahulukan (mis. "User sudah menjadi assignee tugas ini.").
+ */
+export function errorMessage(error: unknown, field?: string): string {
+  if (!(error instanceof ApiError)) {
+    return GENERIC_ERROR;
+  }
+
+  return (field ? error.fieldError(field) : undefined) ?? error.message;
 }
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";

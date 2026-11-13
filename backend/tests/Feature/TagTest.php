@@ -61,6 +61,20 @@ class TagTest extends TestCase
         $this->assertDatabaseHas('tags', ['name' => 'Laporan Bulanan']);
     }
 
+    public function test_membuat_tag_hanya_mengembalikan_id_dan_nama(): void
+    {
+        $member = User::factory()->create();
+
+        $response = $this->actingAs($member, 'sanctum')
+            ->postJson('/api/tags', ['name' => 'urgent'])
+            ->assertStatus(201);
+
+        $response->assertExactJson(['data' => [
+            'id' => Tag::where('name', 'urgent')->value('id'),
+            'name' => 'urgent',
+        ]]);
+    }
+
     public function test_nama_tag_wajib_maksimal_50_dan_unik_tanpa_beda_huruf_besar(): void
     {
         $member = User::factory()->create();

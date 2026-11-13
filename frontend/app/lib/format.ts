@@ -1,8 +1,13 @@
-import type { TaskStatus } from "./types";
+import type { Role, TaskStatus } from "./types";
 
 export const STATUS_LABELS: Record<TaskStatus, string> = {
   belum_selesai: "Belum selesai",
   selesai: "Selesai",
+};
+
+export const ROLE_LABELS: Record<Role, string> = {
+  admin: "Admin",
+  member: "Member",
 };
 
 const dateTimeFormatter = new Intl.DateTimeFormat("id-ID", {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { addAssignee, ApiError, errorMessage } from "../../lib/api";
+import { addAssignee, errorMessage } from "../../lib/api";
 import type { Task, UserSummary } from "../../lib/types";
 import { Button } from "../ui/Button";
 import { inputClassName } from "../ui/Field";
@@ -44,11 +44,7 @@ export function AssigneeForm({ task, users, onAdded }: AssigneeFormProps) {
       onAdded(await addAssignee(task.id, Number(userId)));
       setUserId("");
     } catch (caught) {
-      setError(
-        caught instanceof ApiError
-          ? (caught.fieldError("user_id") ?? caught.message)
-          : errorMessage(caught),
-      );
+      setError(errorMessage(caught, "user_id"));
     } finally {
       setSubmitting(false);
     }

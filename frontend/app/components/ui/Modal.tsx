@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
+import { CloseIcon } from "./Icons";
 
 interface ModalProps {
   open: boolean;
@@ -56,21 +57,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
           aria-label="Tutup"
           className="rounded-md p-1 text-muted hover:bg-surface-2 hover:text-ink"
         >
-          <svg
-            aria-hidden
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <CloseIcon />
         </button>
       </div>
       {open && children}

@@ -1,3 +1,5 @@
+import { CloseIcon } from "./Icons";
+
 interface TagChipProps {
   name: string;
   size?: "sm" | "md";
@@ -30,21 +32,7 @@ export function TagChip({
           aria-label={`Lepas tag ${name}`}
           className="-mr-0.5 rounded p-0.5 text-muted hover:bg-danger-soft hover:text-danger disabled:opacity-50"
         >
-          <svg
-            aria-hidden
-            width="12"
-            height="12"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
+          <CloseIcon size={12} />
         </button>
       )}
     </span>
