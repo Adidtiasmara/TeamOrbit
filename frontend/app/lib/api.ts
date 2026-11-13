@@ -4,6 +4,7 @@ import type {
   FieldErrors,
   Role,
   Tag,
+  TagColor,
   Task,
   TaskStatus,
   TaskSummary,
@@ -228,8 +229,8 @@ export function listTags(): Promise<Tag[]> {
   return requestData<Tag[]>("GET", "/tags");
 }
 
-export function createTag(name: string): Promise<Tag> {
-  return requestData<Tag>("POST", "/tags", { name });
+export function createTag(name: string, color: TagColor): Promise<Tag> {
+  return requestData<Tag>("POST", "/tags", { name, color });
 }
 
 export function addTaskTag(

@@ -150,7 +150,7 @@ Response 200:
       "status": "belum_selesai",
       "created_by": { "id": 1, "name": "..." },
       "assignees": [ { "id": 2, "name": "..." } ],
-      "tags": [ { "id": 1, "name": "urgent" } ],
+      "tags": [ { "id": 1, "name": "urgent", "color": "merah" } ],
       "start_date": "2026-11-20",
       "due_date": "2026-11-25",
       "is_overdue": false,
@@ -320,6 +320,21 @@ Response 200:
 
 Label bebas untuk mengelompokkan tugas. Semua user yang login boleh melihat dan membuat tag sesuai kebutuhan.
 
+Setiap tag punya `color` dari palet tetap berikut (default `abu`):
+
+| Nilai | Label di UI |
+| --- | --- |
+| `abu` | Abu-abu (default) |
+| `merah` | Merah |
+| `oranye` | Oranye |
+| `kuning` | Kuning |
+| `hijau` | Hijau |
+| `biru` | Biru |
+| `ungu` | Ungu |
+| `merah_muda` | Merah muda |
+
+`color` juga ada di setiap tag pada field `tags` objek tugas.
+
 ### List Tags
 
 ```
@@ -331,7 +346,7 @@ Response 200 (urut nama):
 ```json
 {
   "data": [
-    { "id": 1, "name": "urgent" }
+    { "id": 1, "name": "urgent", "color": "merah" }
   ]
 }
 ```
@@ -346,7 +361,8 @@ Body:
 
 ```json
 {
-  "name": "string, required, max 50 karakter, unik"
+  "name": "string, required, max 50 karakter, unik",
+  "color": "salah satu nilai palet, optional, default abu"
 }
 ```
 
@@ -356,11 +372,11 @@ Response 201:
 
 ```json
 {
-  "data": { "id": 1, "name": "urgent" }
+  "data": { "id": 1, "name": "urgent", "color": "merah" }
 }
 ```
 
-Error `422` jika nama kosong, lebih dari 50 karakter, atau sudah dipakai (`"Tag dengan nama ini sudah ada."`).
+Error `422` jika nama kosong, lebih dari 50 karakter, atau sudah dipakai (`"Tag dengan nama ini sudah ada."`), atau jika `color` bukan nilai palet (`errors.color`: `"Warna tag tidak valid."`).
 
 ### Attach Tag ke Tugas
 

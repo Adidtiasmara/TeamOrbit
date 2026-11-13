@@ -3,7 +3,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TaskForm } from "../../components/forms/TaskForm";
-import { TaskDates, TaskStats } from "../../components/tasks/TaskSections";
+import {
+  TaskDates,
+  TaskSummaryPanel,
+} from "../../components/tasks/TaskSections";
 import { Alert } from "../../components/ui/Alert";
 import { Avatar } from "../../components/ui/Avatar";
 import { TAGLINE } from "../../components/ui/Brand";
@@ -14,7 +17,7 @@ import { OverdueBadge, StatusBadge } from "../../components/ui/StatusBadge";
 import { TagChip } from "../../components/ui/TagChip";
 import { useApiData } from "../../hooks/useApiData";
 import { useAuth } from "../../hooks/useAuth";
-import { errorMessage, getTaskSummary, listTasks } from "../../lib/api";
+import { errorMessage, listTasks } from "../../lib/api";
 import { takeFlash } from "../../lib/flash";
 import { isAdmin } from "../../lib/permissions";
 import type { Task, TaskStatus } from "../../lib/types";
@@ -84,7 +87,8 @@ export default function TasksPage() {
         </Button>
       </div>
 
-      {admin && <AdminSummary version={version} />}
+      {/* Statistik seluruh tugas tim, tidak terpengaruh filter status. */}
+      {admin && <TaskSummaryPanel version={version} />}
 
       <div
         role="group"
@@ -160,28 +164,6 @@ export default function TasksPage() {
   );
 }
 
-/** Statistik seluruh tugas tim, tidak terpengaruh filter status. */
-function AdminSummary({ version }: { version: number }) {
-  const summary = useApiData(`task-summary:${version}`, getTaskSummary);
-
-  if (summary.status === "error") {
-    return (
-      <Alert tone="error">
-        Statistik tugas gagal dimuat.{" "}
-        <button type="button" onClick={summary.reload} className="underline">
-          Coba lagi
-        </button>
-      </Alert>
-    );
-  }
-
-  if (summary.status === "loading") {
-    return <Spinner label="Memuat statistik..." />;
-  }
-
-  return <TaskStats summary={summary.data} />;
-}
-
 function TaskRow({ task }: { task: Task }) {
   return (
     <Link
@@ -209,7 +191,7 @@ function TaskRow({ task }: { task: Task }) {
       {task.tags.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {task.tags.map((tag) => (
-            <TagChip key={tag.id} name={tag.name} size="sm" />
+            <TagChip key={tag.id} name={tag.name} color={tag.color} size="sm" />
           ))}
         </div>
       )}

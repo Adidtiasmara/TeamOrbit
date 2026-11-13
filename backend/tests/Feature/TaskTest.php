@@ -383,7 +383,7 @@ class TaskTest extends TestCase
 
         $show = $responses['show'][0];
         $this->assertSame(['id', 'name'], array_keys($show->json('data.assignees.0')));
-        $this->assertSame(['id', 'name'], array_keys($show->json('data.tags.0')));
+        $this->assertSame(['id', 'name', 'color'], array_keys($show->json('data.tags.0')));
         $this->assertSame([], $responses['store'][0]->json('data.assignees'));
         $this->assertSame([], $responses['store'][0]->json('data.tags'));
     }

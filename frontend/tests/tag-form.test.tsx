@@ -78,9 +78,32 @@ describe("TagForm", () => {
 
     await submitName("  Laporan  ");
 
-    expect(mocks.createTag).toHaveBeenCalledWith("Laporan");
+    expect(mocks.createTag).toHaveBeenCalledWith("Laporan", "abu");
     expect(props.onTagCreated).toHaveBeenCalledWith(laporan);
     expect(mocks.addTaskTag).toHaveBeenCalledWith(10, laporan.id);
+  });
+
+  it("warna bisa dipilih dengan nama aksesibel, default Abu-abu", async () => {
+    const user = userEvent.setup();
+    renderForm();
+    const laporan = makeTag(3, "Laporan", "biru");
+    mocks.createTag.mockResolvedValue(laporan);
+    mocks.addTaskTag.mockResolvedValue(makeTask({ tags: [desain, laporan] }));
+
+    const abu = screen.getByRole("radio", { name: "Abu-abu" }) as HTMLInputElement;
+    const biru = screen.getByRole("radio", { name: "Biru" }) as HTMLInputElement;
+    expect(screen.getAllByRole("radio")).toHaveLength(8);
+    expect(abu.checked).toBe(true);
+
+    await user.click(biru);
+    expect(biru.checked).toBe(true);
+    expect(abu.checked).toBe(false);
+
+    await submitName("Laporan");
+
+    expect(mocks.createTag).toHaveBeenCalledWith("Laporan", "biru");
+    // Setelah berhasil, pilihan kembali ke default.
+    await vi.waitFor(() => expect(abu.checked).toBe(true));
   });
 
   it("menolak tag yang sudah terpasang tanpa memanggil API", async () => {

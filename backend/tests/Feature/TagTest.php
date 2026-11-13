@@ -31,18 +31,18 @@ class TagTest extends TestCase
     public function test_daftar_tag_urut_nama_dan_bisa_dilihat_member(): void
     {
         $member = User::factory()->create();
-        $urgent = Tag::factory()->create(['name' => 'urgent']);
+        $urgent = Tag::factory()->create(['name' => 'urgent', 'color' => 'merah']);
         $zebra = Tag::factory()->create(['name' => 'Zebra']);
-        $desain = Tag::factory()->create(['name' => 'desain']);
+        $desain = Tag::factory()->create(['name' => 'desain', 'color' => 'biru']);
 
         // Urutan tidak membedakan huruf besar/kecil: desain, urgent, Zebra.
         $this->actingAs($member, 'sanctum')
             ->getJson('/api/tags')
             ->assertStatus(200)
             ->assertExactJson(['data' => [
-                ['id' => $desain->id, 'name' => 'desain'],
-                ['id' => $urgent->id, 'name' => 'urgent'],
-                ['id' => $zebra->id, 'name' => 'Zebra'],
+                ['id' => $desain->id, 'name' => 'desain', 'color' => 'biru'],
+                ['id' => $urgent->id, 'name' => 'urgent', 'color' => 'merah'],
+                ['id' => $zebra->id, 'name' => 'Zebra', 'color' => 'abu'],
             ]]);
 
         $this->getJson('/api/tags')->assertJsonPath('data.2.name', 'Zebra');
@@ -56,12 +56,12 @@ class TagTest extends TestCase
             ->postJson('/api/tags', ['name' => '  Laporan Bulanan  '])
             ->assertStatus(201)
             ->assertJsonPath('data.name', 'Laporan Bulanan')
-            ->assertJsonStructure(['data' => ['id', 'name']]);
+            ->assertJsonStructure(['data' => ['id', 'name', 'color']]);
 
         $this->assertDatabaseHas('tags', ['name' => 'Laporan Bulanan']);
     }
 
-    public function test_membuat_tag_hanya_mengembalikan_id_dan_nama(): void
+    public function test_membuat_tag_tanpa_warna_memakai_abu(): void
     {
         $member = User::factory()->create();
 
@@ -72,7 +72,35 @@ class TagTest extends TestCase
         $response->assertExactJson(['data' => [
             'id' => Tag::where('name', 'urgent')->value('id'),
             'name' => 'urgent',
+            'color' => 'abu',
         ]]);
+        $this->assertDatabaseHas('tags', ['name' => 'urgent', 'color' => 'abu']);
+    }
+
+    public function test_membuat_tag_dengan_warna_dari_palet(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+
+        foreach (Tag::COLORS as $color) {
+            $this->postJson('/api/tags', ['name' => "tag {$color}", 'color' => $color])
+                ->assertStatus(201)
+                ->assertJsonPath('data.color', $color);
+        }
+
+        $this->assertDatabaseCount('tags', count(Tag::COLORS));
+    }
+
+    public function test_warna_di_luar_palet_ditolak_422(): void
+    {
+        $this->actingAs(User::factory()->create(), 'sanctum');
+
+        foreach (['hitam', '#ff0000', '', null, 'MERAH'] as $color) {
+            $this->postJson('/api/tags', ['name' => 'urgent', 'color' => $color])
+                ->assertStatus(422)
+                ->assertJsonPath('errors.color.0', 'Warna tag tidak valid.');
+        }
+
+        $this->assertDatabaseCount('tags', 0);
     }
 
     public function test_nama_tag_wajib_maksimal_50_dan_unik_tanpa_beda_huruf_besar(): void
@@ -104,9 +132,9 @@ class TagTest extends TestCase
     {
         $creator = User::factory()->create();
         $task = Task::factory()->create(['created_by' => $creator->id]);
-        $urgent = Tag::factory()->create(['name' => 'urgent']);
+        $urgent = Tag::factory()->create(['name' => 'urgent', 'color' => 'merah']);
         $zebra = Tag::factory()->create(['name' => 'Zebra']);
-        $desain = Tag::factory()->create(['name' => 'desain']);
+        $desain = Tag::factory()->create(['name' => 'desain', 'color' => 'ungu']);
         $task->tags()->attach([$urgent->id, $zebra->id]);
 
         $this->actingAs($creator, 'sanctum')
@@ -114,9 +142,9 @@ class TagTest extends TestCase
             ->assertStatus(201)
             ->assertJsonPath('data.id', $task->id)
             ->assertJsonPath('data.tags', [
-                ['id' => $desain->id, 'name' => 'desain'],
-                ['id' => $urgent->id, 'name' => 'urgent'],
-                ['id' => $zebra->id, 'name' => 'Zebra'],
+                ['id' => $desain->id, 'name' => 'desain', 'color' => 'ungu'],
+                ['id' => $urgent->id, 'name' => 'urgent', 'color' => 'merah'],
+                ['id' => $zebra->id, 'name' => 'Zebra', 'color' => 'abu'],
             ]);
 
         $this->assertDatabaseHas('task_tag', ['task_id' => $task->id, 'tag_id' => $desain->id]);
@@ -220,7 +248,7 @@ class TagTest extends TestCase
     {
         $creator = User::factory()->create();
         $task = Task::factory()->create(['created_by' => $creator->id]);
-        $tag = Tag::factory()->create(['name' => 'urgent']);
+        $tag = Tag::factory()->create(['name' => 'urgent', 'color' => 'merah_muda']);
         $task->tags()->attach($tag);
         Task::factory()->create(['created_by' => $creator->id]);
 
@@ -230,12 +258,13 @@ class TagTest extends TestCase
             ->assertStatus(200)
             ->assertJsonStructure(['data' => [['id', 'tags']]]);
 
+        $expected = [['id' => $tag->id, 'name' => 'urgent', 'color' => 'merah_muda']];
         $tagsById = collect($list->json('data'))->pluck('tags', 'id');
-        $this->assertSame([['id' => $tag->id, 'name' => 'urgent']], $tagsById[$task->id]);
+        $this->assertSame($expected, $tagsById[$task->id]);
 
         $this->getJson("/api/tasks/{$task->id}")
             ->assertStatus(200)
-            ->assertJsonPath('data.tags', [['id' => $tag->id, 'name' => 'urgent']]);
+            ->assertJsonPath('data.tags', $expected);
     }
 
     public function test_menghapus_tugas_ikut_melepas_tag_tapi_tag_tetap_ada(): void

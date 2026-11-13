@@ -6,9 +6,11 @@ import {
   deleteTask,
   errorMessage,
   getTask,
+  getTaskSummary,
   removeAssignee,
   removeTaskTag,
 } from "../../lib/api";
+import { useApiData } from "../../hooks/useApiData";
 import { formatDate, formatDateTime } from "../../lib/format";
 import type { Tag, Task, TaskSummary, UserSummary } from "../../lib/types";
 import { AssigneeForm } from "../forms/AssigneeForm";
@@ -18,6 +20,7 @@ import { Avatar } from "../ui/Avatar";
 import { Button } from "../ui/Button";
 import { CloseIcon } from "../ui/Icons";
 import { Modal } from "../ui/Modal";
+import { Spinner } from "../ui/StateMessage";
 import { TagChip } from "../ui/TagChip";
 
 const CARD = "rounded-xl border border-line bg-surface p-5";
@@ -94,6 +97,31 @@ export function TaskStats({ summary }: { summary: TaskSummary }) {
   );
 }
 
+/**
+ * Memuat dan menampilkan statistik dari /tasks/summary. `version` dinaikkan
+ * halaman supaya statistik dimuat ulang, mis. setelah tugas baru dibuat.
+ */
+export function TaskSummaryPanel({ version = 0 }: { version?: number }) {
+  const summary = useApiData(`task-summary:${version}`, getTaskSummary);
+
+  if (summary.status === "error") {
+    return (
+      <Alert tone="error">
+        Statistik tugas gagal dimuat.{" "}
+        <button type="button" onClick={summary.reload} className="underline">
+          Coba lagi
+        </button>
+      </Alert>
+    );
+  }
+
+  if (summary.status === "loading") {
+    return <Spinner label="Memuat statistik..." />;
+  }
+
+  return <TaskStats summary={summary.data} />;
+}
+
 export function TaskInfo({ task }: { task: Task }) {
   return (
     <>
@@ -168,6 +196,7 @@ export function TaskTagsPanel({
             <li key={tag.id} className="max-w-full">
               <TagChip
                 name={tag.name}
+                color={tag.color}
                 onRemove={canManage ? () => handleRemove(tag) : undefined}
                 removing={removingId !== null}
               />
